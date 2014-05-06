@@ -5,16 +5,8 @@ from array import array
 from scipy import interpolate 
 import matplotlib.pyplot as plt
 
-#from settings import *
+from settings import *
 
-# useful functions
-def energy(p,m):
-	""" Compute energy from momentum and mass """
-	return math.sqrt(p*p + m*m)
-
-def momentum(E,m):
-	""" Compute momentum from energy and mass """
-	return math.sqrt(E*E - m*m)
 
 def __AddVar__(self, var, name, res):
     has_branche = res.has_key(name)
@@ -51,15 +43,58 @@ def probVtxInVolume(momentum, ct, volume):
 		print "ERROR: select decay volume 1 or 2"
 		return 0
 	gamma = momentum.Gamma()
-	costheta = momentum.CosTheta()
+	costheta = np.fabs(momentum.CosTheta())
 	start = vol[0]
 	end = vol[1]
 	rad = vol[2]
 	stop = min(rad/costheta, end)
 	esp1 = (-1.) * (start/costheta) / (gamma*ct)
 	esp2 = (-1.) * (stop/costheta) / (gamma*ct)
-	result = math.fabs( math.exp(esp1) - math.exp(esp2) )
+	#if esp1 > 0. or esp2 > 0.:
+	#	print esp1, esp2, start, stop, end, gamma, ct
+
+	np.seterr(all='raise')
+	try:
+		result = np.nan_to_num(np.fabs( np.exp(esp1) - np.exp(esp2) ))
+	except (ValueError, FloatingPointError, RuntimeWarning):
+		result = 0
+	#print result
+	#if result > 1.:
+	#	print result
 	return result
+
+
+
+def expon(x, par):
+	return math.exp( (-1.)*float(par[0])*float(x[0]) )
+
+fun = r.TF1("lifetime",expon,0., 160.,2)
+
+def forceDecayInVolume(Momentum, pdfTheta, ct, volume):
+	if volume == 1:
+		vol = firstVolume
+	elif volume == 2:
+		vol = secondVolume
+	else:
+		print "ERROR: select decay volume 1 or 2"
+		return 0
+	#Direction = Momentum.Vect().Unit()
+	#xstart = (-1.)*vol[2] + r.gRandom.Uniform() * (2.*vol[2])
+	gamma = Momentum.Gamma()
+
+	fun.SetParameter(0, 1./(gamma*ct))
+	
+	EndVertex = r.TVector3(0.,0.,vol[1]+1.)
+	while EndVertex.Z() >= vol[1]:
+		xstart = (-1.)*vol[2] + ((pdfTheta.GetRandom()+math.pi) / (2.*math.pi)) * (2.*vol[2]) 
+		Origin = r.TVector3(xstart, 0., vol[0])
+		DL = fun.GetRandom(0., 40.)
+		EndVertex = r.TVector3(Momentum.Vect().Unit()[0]*DL, Momentum.Vect().Unit()[1]*DL, Momentum.Vect().Unit()[2]*DL) 
+		EndVertex = Origin+EndVertex
+	#print EndVertex.X(), EndVertex.Z()
+	return EndVertex
+
+
 
 
 

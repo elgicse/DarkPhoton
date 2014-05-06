@@ -1,6 +1,7 @@
 import math
 
 from settings import *
+from functions import *
 
 def leptonicDecayWidth(mDarkPhoton, epsilon, lepton): # mDarkPhoton in GeV
 	""" Dark photon decay width into leptons, in GeV (input short name of lepton family) """

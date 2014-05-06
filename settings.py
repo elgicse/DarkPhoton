@@ -1,16 +1,23 @@
 import math
 
-from functions import *
+#from functions import *
 
 # dark sector settings
-epsilon = 0.00001
+#epsilon = 0.00001
 #epsilon = 0.003
 #epsilon = 1.0
 #mDarkPhoton = 0.07
 #mDarkPhoton = 1.0
-mDarkPhoton = 0.05
+#mDarkPhoton = 0.05
 
-# IO settings
+# useful functions
+def energy(p,m):
+	""" Compute energy from momentum and mass """
+	return math.sqrt(p*p + m*m)
+
+def momentum(E,m):
+	""" Compute momentum from energy and mass """
+	return math.sqrt(E*E - m*m)
 
 # runtime
 res = {}
@@ -23,7 +30,7 @@ protonEnergy = 400. # GeV/c
 protonMomentum = momentum(protonEnergy,mProton)
 protonFlux = 2.*pow(10.,20.)
 firstVolume = [60., 100., 2.5] # start, end, radius (m)
-secondVolume = [110., 140., 2.5] # start, end, radius (m)
+secondVolume = [110., 150., 2.5] # start, end, radius (m)
 
 # constants
 alphaQED = 1./137.

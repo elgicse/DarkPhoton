@@ -92,15 +92,15 @@ def prodRate(mDarkPhoton,epsilon):
 	return integral[0]
 
 # total production rate of A'
-norm = prodRate(mDarkPhoton,epsilon)
+#norm = prodRate(mDarkPhoton,epsilon)
 # number of A' produced
-numDarkPhotons = int(math.floor(norm*protonFlux))
-
-print
-print "Epsilon \t %s"%epsilon
-print "mDarkPhoton \t %s"%mDarkPhoton
-print "A' production rate per p.o.t: \t %.8g"%norm
-print "Number of A' produced in SHiP: \t %.8g"%numDarkPhotons
+#numDarkPhotons = int(math.floor(norm*protonFlux))
+#
+#print
+#print "Epsilon \t %s"%epsilon
+#print "mDarkPhoton \t %s"%mDarkPhoton
+#print "A' production rate per p.o.t: \t %.8g"%norm
+#print "Number of A' produced in SHiP: \t %.8g"%numDarkPhotons
 
 def normalisedProductionPDF(p,theta,mDarkPhoton,epsilon,norm):
 	""" Probability density function for A' production in SHIP """
@@ -108,6 +108,7 @@ def normalisedProductionPDF(p,theta,mDarkPhoton,epsilon,norm):
 
 def hProdPDF(mDarkPhoton,epsilon,norm):
 	""" Histogram of the PDF for A' production in SHIP """
+	norm = prodRate(mDarkPhoton,epsilon)
 	angles = np.linspace(-1*math.pi,1.*math.pi,360,endpoint=False).tolist()
 	anglestep = math.pi/180.
 	momentumStep = 0.05 # GeV
