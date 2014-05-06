@@ -42,6 +42,28 @@ def GetDecayPoint(Origin, Momentum, lifetime):
     return EndVertex
 
 
+def probVtxInVolume(momentum, ct, volume):
+	if volume == 1:
+		vol = firstVolume
+	elif volume == 2:
+		vol = secondVolume
+	else:
+		print "ERROR: select decay volume 1 or 2"
+		return 0
+	gamma = momentum.Gamma()
+	costheta = momentum.CosTheta()
+	start = vol[0]
+	end = vol[1]
+	rad = vol[2]
+	stop = min(rad/costheta, end)
+	esp1 = (-1.) * (start/costheta) / (gamma*ct)
+	esp2 = (-1.) * (stop/costheta) / (gamma*ct)
+	result = math.fabs( math.exp(esp1) - math.exp(esp2) )
+	return result
+
+
+
+
 def readPDGtable():
     """ Returns R data from PDG in a easy to use format """
 
