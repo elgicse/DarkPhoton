@@ -44,7 +44,7 @@ def makeNtupleDecayRestFrame(lepton,mDarkPhoton,nEvents=10000):
 	res = {}
 	if mDarkPhoton > (2.* computeMass(lepton)/1000.):
 		for i in xrange(nEvents):
-			if (i%50000)==0:
+			if (i%5000)==0:
 				print "Making rest frame decay n. %s for A' -> %s%s"%(i,computeName(lepton),computeName(lepton))
 			pl1, pl2 = decayRestFrame(lepton,mDarkPhoton)
 			#print pl1, pl2
