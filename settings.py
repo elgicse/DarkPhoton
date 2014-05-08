@@ -32,6 +32,8 @@ protonMomentum = momentum(protonEnergy,mProton)
 protonFlux = 2.*pow(10.,20.)
 firstVolume = [60., 100., 2.5] # start, end, radius (m)
 secondVolume = [110., 150., 2.5] # start, end, radius (m)
+v1ThetaMax = firstVolume[2]/firstVolume[0]
+v2ThetaMax = secondVolume[2]/secondVolume[0]
 
 # constants
 alphaQED = 1./137.

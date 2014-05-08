@@ -46,29 +46,20 @@ def probVtxInVolume(momentum, ct, volume, gamma=0):
 	if not gamma:
 		gamma = momentum.Gamma()
 	costheta = np.fabs(momentum.CosTheta())
+	tantheta = np.tan(momentum.Theta())
 	start = vol[0]
 	end = vol[1]
 	rad = vol[2]
-	stop = min(rad/costheta, end)
-	if vol[2]/costheta < vol[0]:
+	stop = min(rad/tantheta, end)
+	if stop < start:
 		return 0.
-	#else:
-	#	print start, stop
-
 	esp1 = (-1.) * (start/costheta) / (gamma*ct)
 	esp2 = (-1.) * (stop/costheta) / (gamma*ct)
-	#print esp1, esp2, costheta
-	#if esp1 > 0. or esp2 > 0.:
-	#	print esp1, esp2, start, stop, end, gamma, ct
-
 	np.seterr(all='raise')
-	#print esp1, esp2, np.exp(esp1), np.exp(esp2)
 	try:
 		result = np.nan_to_num(np.fabs( np.exp(esp1) - np.exp(esp2) ))
 	except (ValueError, FloatingPointError):#, RuntimeWarning):
 		result = 0.
-	#if result > 0.:
-	#print result
 	return result
 
 

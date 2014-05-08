@@ -44,8 +44,8 @@ def makeNtupleDecayRestFrame(lepton,mDarkPhoton,nEvents=10000):
 	res = {}
 	if mDarkPhoton > (2.* computeMass(lepton)/1000.):
 		for i in xrange(nEvents):
-			if (i%5000)==0:
-				print "Making rest frame decay n. %s for A' -> %s%s"%(i,computeName(lepton),computeName(lepton))
+			#if (i%5000)==0:
+			#	print "Making rest frame decay n. %s for A' -> %s%s"%(i,computeName(lepton),computeName(lepton))
 			pl1, pl2 = decayRestFrame(lepton,mDarkPhoton)
 			#print pl1, pl2
 			decayRF.AddVar(pl1.Px(), "%s1_Px"%computeName(lepton), res)
@@ -63,28 +63,30 @@ def makeNtupleDecayRestFrame(lepton,mDarkPhoton,nEvents=10000):
 	outFile.Close()
 
 
-def boostChildrenInAcceptance(lepton,mass,eps,nMaxChildren=0):
+def boostChildrenInAcceptance(lepton,mass,eps,volume,nMaxChildren=0):
 	rfFile = r.TFile("out/NTuples/childrenRestFrame_%s_m%s.root"%(computeName(lepton),mass),"read")
 	paraphFile = r.TFile("out/NTuples/ParaPhoton_eps%s_m%s.root"%(eps,mass),"read")
 	rfTree = rfFile.Get("decayRF")
-	hpdf1 = paraphFile.Get("hPDFinAcc1_eps%s_m%s"%(eps,mass))
-	hpdf2 = paraphFile.Get("hPDFinAcc2_eps%s_m%s"%(eps,mass))
-	fsTree1 = r.TTree("finalStateVol1","finalStateVol1")
-	fsTree2 = r.TTree("finalStateVol2","finalStateVol2")
+	hpdf1 = paraphFile.Get("hPDFinAcc%s_eps%s_m%s"%(volume,eps,mass))
+	#hpdf2 = paraphFile.Get("hPDFinAcc%s_eps%s_m%s"%(eps,mass))
+	fsTree1 = r.TTree("finalStateVol%s"%volume,"finalStateVol%s"%volume)
+	#fsTree2 = r.TTree("finalStateVol2","finalStateVol2")
 	if not nMaxChildren:
 		nMaxChildren = rfTree.GetEntries()
+	else:
+		nMaxChildren = min(nMaxChildren, rfTree.GetEntries())
 	nGeneratedEvents = 0
 	nEventsInAcceptance1 = 0
 	nEventsInAcceptance2 = 0
 	pA1 = r.TLorentzVector()
-	pA2 = r.TLorentzVector()
+	#pA2 = r.TLorentzVector()
 	vec1 = r.TVector3()
-	vec2 = r.TVector3()
+	#vec2 = r.TVector3()
 	boostVec1 = r.TVector3()
-	boostVec2 = r.TVector3()
+	#boostVec2 = r.TVector3()
 	ct = cTau(mass,eps)
 	res = {}
-	res2 = {}
+	#res2 = {}
 	for (i,childPair) in enumerate(rfTree):
 		rfTree.GetEntry(i)
 		nGeneratedEvents += 1
@@ -104,7 +106,7 @@ def boostChildrenInAcceptance(lepton,mass,eps,nMaxChildren=0):
 		vec1.SetMagThetaPhi(p1, theta1, 0.)
 		pA1.SetE(energy(p1,mass))
 		pA1.SetVect(vec1)
-		vtx1 = makeVtx4AcceptedParaphoton(pA1, ct, 1)
+		vtx1 = makeVtx4AcceptedParaphoton(pA1, ct, volume)
 		boostVec1 = pA1.BoostVector()
 		pc1v1 = pChild1
 		pc2v1 = pChild2
@@ -133,53 +135,54 @@ def boostChildrenInAcceptance(lepton,mass,eps,nMaxChildren=0):
 		fsTree1.SetDirectory(0)
 		fsTree1.Fill()
 
-		# Check acceptance of the second volume
-		p2, theta2 = r.Double(), r.Double()
-		hpdf2.GetRandom2(p2, theta2)
-		vec2.SetMagThetaPhi(p2, theta2, 0.)
-		pA2.SetE(energy(p2,mass))
-		pA2.SetVect(vec2)
-		vtx2 = makeVtx4AcceptedParaphoton(pA2, ct, 2)
-		boostVec2 = pA2.BoostVector()
-		pc1v2 = pChild1
-		pc2v2 = pChild2
-		pc1v2.Boost(boostVec2)
-		pc2v2.Boost(boostVec2)
-
-		inAcc2 = inAcceptance(vtx2, pc1v2, pc2v2)
-		if inAcc2:
-			nEventsInAcceptance2 +=1
-		# Fill tree
-		fsTree2.AddVar(pA2.Px(), "mother_Px",   res2)
-		fsTree2.AddVar(pA2.Py(), "mother_Py",   res2)
-		fsTree2.AddVar(pA2.Pz(), "mother_Pz",   res2)
-		fsTree2.AddVar(pA2.E(),  "mother_E",    res2)
-		fsTree2.AddVar(vtx2.X(), "vtx_x",       res2)
-		fsTree2.AddVar(vtx2.Y(), "vtx_y",       res2)
-		fsTree2.AddVar(vtx2.Z(), "vtx_z",       res2)
-		fsTree2.AddVar(pc1v2.Px(), "child1_Px", res2)
-		fsTree2.AddVar(pc1v2.Py(), "child1_Py", res2)
-		fsTree2.AddVar(pc1v2.Pz(), "child1_Pz", res2)
-		fsTree2.AddVar(pc1v2.E(),  "child1_E",  res2)
-		fsTree2.AddVar(pc2v2.Px(), "child2_Px", res2)
-		fsTree2.AddVar(pc2v2.Py(), "child2_Py", res2)
-		fsTree2.AddVar(pc2v2.Pz(), "child2_Pz", res2)
-		fsTree2.AddVar(pc2v2.E(),  "child2_E",  res2)
-		fsTree2.AddVar(inAcc2, "in_acceptance", res2)
-		fsTree2.SetDirectory(0)
-		fsTree2.Fill()
+		## Check acceptance of the second volume
+		#p2, theta2 = r.Double(), r.Double()
+		#hpdf2.GetRandom2(p2, theta2)
+		#vec2.SetMagThetaPhi(p2, theta2, 0.)
+		#pA2.SetE(energy(p2,mass))
+		#pA2.SetVect(vec2)
+		#vtx2 = makeVtx4AcceptedParaphoton(pA2, ct, 2)
+		#boostVec2 = pA2.BoostVector()
+		#pc1v2 = pChild1
+		#pc2v2 = pChild2
+		#pc1v2.Boost(boostVec2)
+		#pc2v2.Boost(boostVec2)
+		#inAcc2 = inAcceptance(vtx2, pc1v2, pc2v2)
+		#if inAcc2:
+		#	nEventsInAcceptance2 +=1
+		## Fill tree
+		#fsTree2.AddVar(pA2.Px(), "mother_Px",   res2)
+		#fsTree2.AddVar(pA2.Py(), "mother_Py",   res2)
+		#fsTree2.AddVar(pA2.Pz(), "mother_Pz",   res2)
+		#fsTree2.AddVar(pA2.E(),  "mother_E",    res2)
+		#fsTree2.AddVar(vtx2.X(), "vtx_x",       res2)
+		#fsTree2.AddVar(vtx2.Y(), "vtx_y",       res2)
+		#fsTree2.AddVar(vtx2.Z(), "vtx_z",       res2)
+		#fsTree2.AddVar(pc1v2.Px(), "child1_Px", res2)
+		#fsTree2.AddVar(pc1v2.Py(), "child1_Py", res2)
+		#fsTree2.AddVar(pc1v2.Pz(), "child1_Pz", res2)
+		#fsTree2.AddVar(pc1v2.E(),  "child1_E",  res2)
+		#fsTree2.AddVar(pc2v2.Px(), "child2_Px", res2)
+		#fsTree2.AddVar(pc2v2.Py(), "child2_Py", res2)
+		#fsTree2.AddVar(pc2v2.Pz(), "child2_Pz", res2)
+		#fsTree2.AddVar(pc2v2.E(),  "child2_E",  res2)
+		#fsTree2.AddVar(inAcc2, "in_acceptance", res2)
+		#fsTree2.SetDirectory(0)
+		#fsTree2.Fill()
 
 	if nGeneratedEvents:
 		fracEventsInAcc1 = float(nEventsInAcceptance1) / float(nGeneratedEvents)
-		fracEventsInAcc2 = float(nEventsInAcceptance2) / float(nGeneratedEvents)
+		#fracEventsInAcc2 = float(nEventsInAcceptance2) / float(nGeneratedEvents)
 	else:
-		fracEventsInAcc = 0
+		fracEventsInAcc1 = 0
 	labFile = r.TFile("out/NTuples/childrenLabFrameInAcc_%s_eps%s_m%s.root"%(computeName(lepton),eps,mass),"update")
 	fsTree1.Write()
-	fsTree2.Write()
+	#fsTree2.Write()
 	labFile.Close()
-	print fracEventsInAcc1, fracEventsInAcc2
-	return fracEventsInAcc1, fracEventsInAcc2
+	paraphFile.Close()
+	rfFile.Close()
+	#print fracEventsInAcc1, fracEventsInAcc2
+	return fracEventsInAcc1#, fracEventsInAcc2
 
 
 
