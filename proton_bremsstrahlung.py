@@ -5,6 +5,7 @@ from scipy.integrate import quad, dblquad
 
 from settings import *
 from dark_photon import *
+from paraphotonDecay import *
 
 def zeta(p,theta):
 	""" Fraction of the proton momentum carried away by the paraphoton in the beam direction """
@@ -86,7 +87,7 @@ def dNdPdTheta(p,theta,mDarkPhoton,epsilon):
 def prodRate(mDarkPhoton,epsilon):
 	""" dNdPdTheta integrated over p and theta """
 	integral = dblquad( dNdPdTheta, # integrand
-						-1*math.pi, 1.*math.pi, # theta boundaries (2nd argument of integrand)
+						-0.5*math.pi, 0.5*math.pi, # theta boundaries (2nd argument of integrand)
 						lambda x: 0., lambda x: protonMomentum, # p boundaries (1st argument of integrand)
 						args=(mDarkPhoton, epsilon) ) # extra parameters to pass to integrand
 	return integral[0]
@@ -106,26 +107,31 @@ def normalisedProductionPDF(p,theta,mDarkPhoton,epsilon,norm):
 	""" Probability density function for A' production in SHIP """
 	return (1./norm)*dNdPdTheta(p,theta,mDarkPhoton,epsilon)
 
-def hProdPDF(mDarkPhoton,epsilon,norm):
+def hProdPDF(mDarkPhoton,epsilon,norm,binsp,binstheta):
 	""" Histogram of the PDF for A' production in SHIP """
-	norm = prodRate(mDarkPhoton,epsilon)
-	angles = np.linspace(-1*math.pi,1.*math.pi,360,endpoint=False).tolist()
-	anglestep = math.pi/180.
-	momentumStep = 0.05 # GeV
-	ndiv = int(math.floor(protonMomentum/momentumStep))
-	momenta = np.linspace(momentumStep,protonMomentum,ndiv,endpoint=False).tolist()
-	hPDF = r.TH2F("hPDF_eps%s_m%s"%(epsilon,mDarkPhoton),"hPDF_eps%s_m%s"%(epsilon,mDarkPhoton),
-		ndiv,0.5*momentumStep,protonMomentum-0.5*momentumStep,
-		360,-1*math.pi-0.5*anglestep,1.*math.pi-0.5*anglestep)
+	#norm = prodRate(mDarkPhoton,epsilon)
+	#angles = np.linspace(-1*math.pi,1.*math.pi,360,endpoint=False).tolist()
+	#angles = np.linspace(-0.5*math.pi,0.5*math.pi,binstheta,endpoint=False).tolist()
+	angles = np.linspace(-0.5*math.pi,0.5*math.pi,binstheta).tolist()
+	#anglestep = math.pi/180.
+	anglestep = 2.*math.pi/binstheta
+	#momentumStep = 0.05 # GeV
+	#ndiv = int(math.floor(protonMomentum/momentumStep))
+	#momenta = np.linspace(momentumStep,protonMomentum,ndiv,endpoint=False).tolist()
+	momentumStep = protonMomentum/binsp
+	momenta = np.linspace(momentumStep,protonMomentum,binsp,endpoint=False).tolist()
+	hPDF = r.TH2F("hPDF_eps%s_m%s"%(epsilon,mDarkPhoton) ,"hPDF_eps%s_m%s"%(epsilon,mDarkPhoton),
+		binsp,0.5*momentumStep,protonMomentum-0.5*momentumStep,
+		binstheta,-0.5*math.pi-0.5*anglestep,0.5*math.pi+0.5*anglestep)
 	hPDF.SetTitle("PDF for A' production (m_{A'}=%s GeV, #epsilon =%s)"%(mDarkPhoton,epsilon))
 	hPDF.GetXaxis().SetTitle("P_{A'} [GeV]")
 	hPDF.GetYaxis().SetTitle("#theta_{A'} [rad]")
 	hPDFtheta = r.TH1F("hPDFtheta_eps%s_m%s"%(epsilon,mDarkPhoton),
 		"hPDFtheta_eps%s_m%s"%(epsilon,mDarkPhoton),
-		360,-1*math.pi-0.5*anglestep,1.*math.pi-0.5*anglestep)
+		binstheta,-0.5*math.pi-0.5*anglestep,0.5*math.pi+0.5*anglestep)
 	hPDFp = r.TH1F("hPDFp_eps%s_m%s"%(epsilon,mDarkPhoton),
 		"hPDFp_eps%s_m%s"%(epsilon,mDarkPhoton),
-		ndiv,0.5*momentumStep,protonMomentum-0.5*momentumStep)
+		binsp,0.5*momentumStep,protonMomentum-0.5*momentumStep)
 	hPDFp.GetXaxis().SetTitle("P_{A'} [GeV]")
 	hPDFtheta.GetXaxis().SetTitle("#theta_{A'} [rad]")
 	for theta in angles:
@@ -136,6 +142,8 @@ def hProdPDF(mDarkPhoton,epsilon,norm):
 			hPDFp.Fill(p,w)
 	hPdfFilename = "out/NTuples/ParaPhoton_eps%s_m%s.root"%(epsilon,mDarkPhoton)
 	outfile = r.TFile(hPdfFilename,"recreate")
+	weight = hPDF.Integral("width")
+	hPDF.Scale(1./weight)
 	hPDF.Write()
 	hPDFp.Write()
 	hPDFtheta.Write()
@@ -145,7 +153,7 @@ def hProdPDF(mDarkPhoton,epsilon,norm):
 def create4Momenta(mDarkPhoton,epsilon,norm,nEvents=10000):
 	""" Create TTree containing the production PDF and the four-momenta and decay vertices of 1000 A' produced in the SHIP beam dump """
 	print "Producing PDF, be patient..."
-	pdf = hProdPDF(mDarkPhoton,epsilon,norm)
+	pdf = hProdPDF(mDarkPhoton,epsilon,norm,binsp, binstheta)
 	#proton4mom = r.TLorentzVector(0., 0., protonMomentum, protonEnergy)
 	#boostVect = proton4mom.BoostVector()
 	origin = r.TVector3(0.,0.,0.)
@@ -186,3 +194,130 @@ def create4Momenta(mDarkPhoton,epsilon,norm,nEvents=10000):
 	outfile = r.TFile(hPdfFilename,"update")
 	newTree.Write()
 	outfile.Close()
+
+
+def scanPDF(mass, eps):
+	outData = []
+	ct = cTau(mass, eps)
+	print "ct ",ct
+	f = r.TFile("out/NTuples/ParaPhoton_eps%s_m%s.root"%(eps,mass),"update")
+	hpdf = f.Get("hPDF_eps%s_m%s"%(eps,mass))
+	#print hpdf.Integral("width")
+	DeltaTheta = hpdf.GetYaxis().GetBinCenter(1)-hpdf.GetYaxis().GetBinCenter(0)
+	DeltaP = hpdf.GetXaxis().GetBinCenter(1)-hpdf.GetXaxis().GetBinCenter(0)
+	ThetaMax = hpdf.GetYaxis().GetXmax()
+	ThetaMin = hpdf.GetYaxis().GetXmin()
+	RangeTheta = ThetaMax - ThetaMin
+	PMax = hpdf.GetXaxis().GetXmax()
+	PMin = hpdf.GetXaxis().GetXmin()
+	RangeP = PMax - PMin 
+	binRelSize = (DeltaP*DeltaTheta)#/(RangeTheta/RangeP)
+	nMom = hpdf.GetXaxis().GetNbins()
+	nTheta = hpdf.GetYaxis().GetNbins()
+	#print nMom, nTheta
+	fourMom = r.TLorentzVector()
+	vec = r.TVector3()
+	hPdfAcc1 = r.TH2F("hPDFinAcc1_eps%s_m%s"%(eps,mass),"hPDFinAcc1_eps%s_m%s"%(eps,mass),
+		nMom,PMin,PMax,nTheta,ThetaMin,ThetaMax)
+	hPdfAcc2 = r.TH2F("hPDFinAcc2_eps%s_m%s"%(eps,mass),"hPDFinAcc2_eps%s_m%s"%(eps,mass),
+		nMom,PMin,PMax,nTheta,ThetaMin,ThetaMax)
+	index = 0
+	valAcc1 = 0.
+	valAcc2 = 0.
+	wtot = 0.
+	naccgeo = 0
+	for p in xrange(nMom):
+		for th in xrange(nTheta):
+			index += 1
+			if (index%1000 == 0):
+				print "bin %s..."%index
+			weight = hpdf.GetBinContent(p, th)
+			if weight > 0.:
+				mom = hpdf.GetXaxis().GetBinCenter(p)
+				angle = hpdf.GetYaxis().GetBinCenter(th)
+				binWeight = weight*binRelSize
+				#binWeight=weight
+				wtot = wtot + binWeight
+				vec.SetMagThetaPhi(mom, angle, 0.)
+				fourMom.SetE(energy(mom, mass))
+				fourMom.SetVect(vec)
+				gamma = fourMom.Gamma()
+				#print gamma*ct
+				#accGeo = GeometricAcceptance(gamma, ct, angle)
+				px = fourMom.Px()
+				pz = fourMom.Pz()
+				#print fourMom.Theta(), 2.5/60.
+				accGeo1 = GeometricAcceptance(px, pz, 1)
+				accGeo2 = GeometricAcceptance(px, pz, 2)
+				naccgeo += accGeo1*binWeight
+				accLifetimeVol1 = probVtxInVolume(fourMom, ct, 1, gamma)
+				accLifetimeVol2 = probVtxInVolume(fourMom, ct, 2, gamma)
+				acc1 = binWeight * accGeo1 * accLifetimeVol1
+				#print binWeight, accGeo1, accLifetimeVol1
+				valAcc1 = valAcc1 + acc1
+				acc2 = binWeight * accGeo2 * accLifetimeVol2
+				valAcc2 = valAcc2 + acc2
+				outData.append([mom, angle, gamma, ct, binWeight, accGeo1,
+					accGeo2, accLifetimeVol1, accLifetimeVol2])
+				hPdfAcc1.Fill(mom, angle, acc1)
+				hPdfAcc2.Fill(mom, angle, acc2)
+	print naccgeo
+	totWeight1 = hPdfAcc1.Integral("width")
+	print totWeight1
+	normalization1 = 1./totWeight1
+	hPdfAcc1.Scale(normalization1)
+	hPdfAcc1.Write()
+	totWeight2 = hPdfAcc2.Integral("width")
+	normalization2 = 1./totWeight2
+	hPdfAcc2.Scale(normalization2)
+	hPdfAcc2.Write()
+	f.Close()
+	#print "wtot ", wtot
+	print "acc ",valAcc1, valAcc2
+	return valAcc1, valAcc2, outData
+
+
+def makeAcceptancePdf(mass, eps, binsp, binstheta):
+	norm=prodRate(mass, eps)
+	hProdPDF(mass, eps, norm, binsp, binstheta)
+	valAcc1, valAcc2, outData = scanPDF(mass, eps)
+	return norm, valAcc1, valAcc2, outData
+
+
+def computeNEvents(mass, eps, binsp=90, binstheta=180):
+	outData = makeAcceptancePdf(mass, eps, binsp, binstheta)
+	prodFrac = outData[0]
+	prob1 = outData[1]
+	prob2 = outData[2]
+	makeNtupleDecayRestFrame(e,mass,1000)
+	acc1e, acc2e = boostChildrenInAcceptance(e,mass,eps)
+	bre = leptonicBranchingRatio(mass, eps, e)
+	if mass > 2.*mmu/1000.:
+		makeNtupleDecayRestFrame(mu,mass,1000)
+		acc1mu, acc2mu = boostChildrenInAcceptance(mu,mass,eps)
+		brmu = leptonicBranchingRatio(mass, eps, mu)
+		fracV1 = prob1 * ( bre*acc1e + brmu*acc1mu )
+		fracV2 = prob2 * ( bre*acc2e + brmu*acc2mu )
+	else:
+		fracV1 = prob1 * bre*acc1e
+		fracV2 = prob2 * bre*acc2e
+	expectedEvents = protonFlux * prodFrac * (fracV1 + fracV2)
+	print prodFrac, prob1, prob2, bre, acc1e, acc2e, fracV1, fracV2, expectedEvents
+	return expectedEvents
+
+
+
+
+
+
+
+
+
+def printAcceptancePdfFile(mass, eps, binsp, binstheta):
+	outData = makeAcceptancePdf(mass, eps, binsp, binstheta)
+	with open("out/TextData/ParaphotonInAcceptancePDF.dat","w") as ofile:
+		ofile.write("P \t Theta \t Gamma \t cTau \t binWeight \t accGeo1 \t accGeo2 \t accLifetimeVol1 \t accLifetimeVol2\n")
+		for datalist in outData[3]:
+			ofile.write("%s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t "%(datalist[0],datalist[1],datalist[2],datalist[3],datalist[4],datalist[5],datalist[6],datalist[7],datalist[8]))
+
+

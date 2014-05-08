@@ -47,6 +47,7 @@ def cTau(mDarkPhoton, epsilon): # decay length in meters, dark photon mass in Ge
 	p1 = 0.8 / (1. + Ree_interp(mDarkPhoton))
 	p2 = pow((pow(10., -6.) / epsilon),2.)
 	p3 = 100. / (mDarkPhoton*1000.)
+	#print "ctau ",p1*p2*p3, 
 	return p1*p2*p3 #GeV/MeV conversion
 
 def lifetime(mDarkPhoton, epsilon):
