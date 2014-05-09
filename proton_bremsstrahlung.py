@@ -331,7 +331,10 @@ def computeNEvents(mass, eps, binsp=90, binstheta=80):
 	expectedEvents = protonFlux * prodFrac * (fracV1 + fracV2)
 	#print prodFrac, prob1, prob2, bre, acc1e, acc2e, fracV1, fracV2, expectedEvents
 	with open("out/TextData/sensitivityScan.txt","a") as ofile:
-		ofile.write("%s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s\n"%(mass, eps, prodFrac, prob1, prob2, bre, brmu, acc1e, acc2e, acc1mu, acc2mu, expectedEvents ))
+		try:
+			ofile.write("%s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s\n"%(mass, eps, prodFrac, prob1, prob2, bre, brmu, acc1e, acc2e, acc1mu, acc2mu, expectedEvents ))
+		except KeyboardInterrupt:
+			continue
 	return expectedEvents
 
 
