@@ -50,7 +50,11 @@ def sigma(s): # s in GeV^2 ---> sigma in mb
 	a4 = 33.34
 	a5 = 0.545
 	a6 = 0.458
+	#try: 
 	p1 = a2*pow(math.log(s/a3),2.) # natural logarithm, right?
+	#except ValueError:
+	#	p1 = 0.
+	#	print "could not compute sigma for s = %s"%s
 	p2 = a4*pow((1./s),a5)
 	p3 = a4*pow((1./s),a6)
 	return a1 + p1 - p2 + p3
@@ -85,11 +89,14 @@ def dNdPdTheta(p,theta,mDarkPhoton,epsilon):
 	diffRate = dNdZdPtSquare(p,mDarkPhoton,theta,epsilon) * dPt2dTheta(p,theta) * dZdP(p,theta)
 	return math.fabs(diffRate) # integrating in (-pi, pi)...
 
+def pMax(mDarkPhoton):
+	return math.sqrt( (energy(protonMomentum,mProton)**2. - mDarkPhoton**2.) - mDarkPhoton**2.)
+
 def prodRate(mDarkPhoton,epsilon, tmin = -0.5*math.pi, tmax = 0.5*math.pi):
 	""" dNdPdTheta integrated over p and theta """
 	integral = dblquad( dNdPdTheta, # integrand
 						tmin, tmax, # theta boundaries (2nd argument of integrand)
-						lambda x: 0., lambda x: protonMomentum, # p boundaries (1st argument of integrand)
+						lambda x: 0., lambda x: pMax(mDarkPhoton), # p boundaries (1st argument of integrand)
 						args=(mDarkPhoton, epsilon) ) # extra parameters to pass to integrand
 	return integral[0]
 
@@ -119,10 +126,10 @@ def hProdPDF(mDarkPhoton,epsilon,norm,binsp,binstheta,tmin = -0.5*math.pi, tmax 
 	#momentumStep = 0.05 # GeV
 	#ndiv = int(math.floor(protonMomentum/momentumStep))
 	#momenta = np.linspace(momentumStep,protonMomentum,ndiv,endpoint=False).tolist()
-	momentumStep = protonMomentum/binsp
-	momenta = np.linspace(momentumStep,protonMomentum,binsp,endpoint=False).tolist()
+	momentumStep = pMax(mDarkPhoton)/binsp
+	momenta = np.linspace(momentumStep,pMax(mDarkPhoton),binsp,endpoint=False).tolist()
 	hPDF = r.TH2F("hPDF_eps%s_m%s"%(epsilon,mDarkPhoton) ,"hPDF_eps%s_m%s"%(epsilon,mDarkPhoton),
-		binsp,0.5*momentumStep,protonMomentum-0.5*momentumStep,
+		binsp,0.5*momentumStep,pMax(mDarkPhoton)-0.5*momentumStep,
 		binstheta,tmin-0.5*anglestep,tmax+0.5*anglestep)
 	hPDF.SetTitle("PDF for A' production (m_{A'}=%s GeV, #epsilon =%s)"%(mDarkPhoton,epsilon))
 	hPDF.GetXaxis().SetTitle("P_{A'} [GeV]")
@@ -132,7 +139,7 @@ def hProdPDF(mDarkPhoton,epsilon,norm,binsp,binstheta,tmin = -0.5*math.pi, tmax 
 		binstheta,tmin-0.5*anglestep,tmax+0.5*anglestep)
 	hPDFp = r.TH1F("hPDFp_eps%s_m%s"%(epsilon,mDarkPhoton),
 		"hPDFp_eps%s_m%s"%(epsilon,mDarkPhoton),
-		binsp,0.5*momentumStep,protonMomentum-0.5*momentumStep)
+		binsp,0.5*momentumStep,pMax(mDarkPhoton)-0.5*momentumStep)
 	hPDFp.GetXaxis().SetTitle("P_{A'} [GeV]")
 	hPDFtheta.GetXaxis().SetTitle("#theta_{A'} [rad]")
 	for theta in angles:
