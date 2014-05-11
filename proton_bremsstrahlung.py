@@ -156,6 +156,8 @@ def hProdPDF(mDarkPhoton,epsilon,norm,binsp,binstheta,tmin = -0.5*math.pi, tmax 
 	hPDFp.Write()
 	hPDFtheta.Write()
 	outfile.Close()
+	del angles
+	del momenta
 	return hPDF
 
 def create4Momenta(mDarkPhoton,epsilon,norm,nEvents=10000,tmin = -0.5*math.pi, tmax = 0.5*math.pi):

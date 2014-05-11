@@ -104,8 +104,8 @@ def inBelt((x,y)):
 	if (a < x < e) and (beltSegment(lower, newy1, a, sl1, x) < y < beltSegment(upper, newy1, a, sl1, x)):
 		return True
 	# no need for other points in the bottom contour
-	#elif (a < x < e) and (beltSegment(lower, newy2, a, sl2, x) < y < beltSegment(upper, newy2, a, sl2, x)):
-	#	return True
+	elif (a < x < e) and (beltSegment(lower, newy2, a, sl2, x) < y < beltSegment(upper, newy2, a, sl2, x)):
+		return True
 	return False
 
 
@@ -127,7 +127,8 @@ def makeSensitivityBelt(existingData, ndivx, ndivy=240, verbose=0):
 		logeps = roundToN(point[1])
 		datum = ( logmass, logeps, n)
 		if verbose:
-			print "Point %s of %s: \t log10(mass) %s \t log10(eps) %s \t\t Events: %s"%(i, len(points), logmass, logeps, n)
+			if not i%1000:
+				print "Point %s of %s: \t log10(mass) %s \t log10(eps) %s \t\t Events: %s"%(i, len(points), logmass, logeps, n)
 		data.append(datum)
 		gc.collect()
 	return data
@@ -297,16 +298,56 @@ if __name__ == '__main__':
 	grtot.GetYaxis().SetTitle(r"log_{10}#varepsilon")
 	c1.SetGrid()
 	whole = top+bottom
-	c2 = r.TCanvas()
-	c2.cd()
+	#c2 = r.TCanvas()
+	#c2.cd()
 	grtotlog = r.TGraph(len(whole))
 	for i in xrange(len(whole)):
 		grtotlog.SetPoint(i, pow(10.,whole[i][0]), pow(10.,whole[i][1]))
-	grtotlog.SetMarkerStyle(20)
-	grtotlog.Draw()
-	grtotlog.GetXaxis().SetTitle(r"M_{A} (GeV)")
-	grtotlog.GetYaxis().SetTitle(r"Coupling #varepsilon")
-	c2.SetGrid()
-	c2.SetLogx()
-	c2.SetLogy()
+	#grtotlog.SetMarkerStyle(20)
+	#grtotlog.Draw()
+	#grtotlog.GetXaxis().SetTitle(r"M_{A} (GeV)")
+	#grtotlog.GetYaxis().SetTitle(r"Coupling #varepsilon")
+	#c2.SetGrid()
+	#c2.SetLogx()
+	#c2.SetLogy()
 
+	# Plot on top of the old limits
+	current_mass = []
+	current_eps = []
+	
+	with open("current_limits_all.csv","r") as f_current:
+		for line in f_current:
+			line = line.split(",")
+			current_mass.append(float(line[0]))
+			current_eps.append(float(line[1]))
+	
+	current_r_mass = array('f', current_mass)
+	current_r_eps = array('f', current_eps)
+	
+	gr_curr = r.TGraph(len(current_r_mass), current_r_mass, current_r_eps)
+	gr_curr.SetLineWidth(3504)
+	gr_curr.SetFillStyle(3002)
+	gr_curr.SetLineColor(r.kGray+2)
+	gr_curr.SetTitle("Current limits on hidden photons")
+	#gr_curr.Draw("alp")
+	grtotlog.SetLineColor(r.kRed-4)
+	grtotlog.SetMarkerColor(r.kRed-4)
+	grtotlog.SetLineWidth(4)
+	c3 = r.TCanvas()
+	c3.cd()
+	c3.SetLogx()
+	c3.SetLogy()
+	mgr = r.TMultiGraph()
+	mgr.Add(gr_curr)
+	mgr.Add(grtotlog)
+	mgr.Draw("alp")
+	mgr.GetXaxis().SetTitle(r"m_{#gamma'} (GeV)")
+	mgr.GetYaxis().SetTitle(r"#chi")
+	mgr.GetXaxis().SetTitleSize(0.05)
+	mgr.GetYaxis().SetTitleSize(0.05)
+	mgr.GetXaxis().SetTitleOffset(0.90)
+	mgr.GetYaxis().SetTitleOffset(0.90)
+
+	#grtotlog.Draw("same")
+
+	c3.SetGrid()
