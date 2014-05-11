@@ -334,7 +334,7 @@ def computeNEvents(mass, eps, binsp=90, binstheta=80):
 		try:
 			ofile.write("%s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s\n"%(mass, eps, prodFrac, prob1, prob2, bre, brmu, acc1e, acc2e, acc1mu, acc2mu, expectedEvents ))
 		except KeyboardInterrupt:
-			continue
+			pass
 	return expectedEvents
 
 

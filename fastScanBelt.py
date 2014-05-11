@@ -103,12 +103,13 @@ def inBelt((x,y)):
 	# new belt segments:
 	if (a < x < e) and (beltSegment(lower, newy1, a, sl1, x) < y < beltSegment(upper, newy1, a, sl1, x)):
 		return True
-	elif (a < x < e) and (beltSegment(lower, newy2, a, sl2, x) < y < beltSegment(upper, newy2, a, sl2, x)):
-		return True
+	# no need for other points in the bottom contour
+	#elif (a < x < e) and (beltSegment(lower, newy2, a, sl2, x) < y < beltSegment(upper, newy2, a, sl2, x)):
+	#	return True
 	return False
 
 
-def makeSensitivityBelt(existingData, ndivx, ndivy=60, verbose=0):
+def makeSensitivityBelt(existingData, ndivx, ndivy=240, verbose=0):
 	points = [(x,y) for x in np.linspace(a, e, ndivx) for y in np.linspace(-9.1, -2.5, ndivy) if inBelt((x,y))]
 	data = []
 	for i,point in enumerate(points):
@@ -121,11 +122,7 @@ def makeSensitivityBelt(existingData, ndivx, ndivy=60, verbose=0):
 				n = oldDatum[2]
 				break
 		if not found:
-			#try:
 			n = roundToN( computeNEvents(mass, eps) )
-			#except ValueError:
-			#	print "ValueError!!"
-			#	continue
 		logmass = roundToN(point[0])
 		logeps = roundToN(point[1])
 		datum = ( logmass, logeps, n)
@@ -183,13 +180,9 @@ def isInRightContour(datum):
 
 
 def closest(data,m):
-	#if not data:
-	#	print "Error"
 	useful = [dat for dat in data if (m/2. <= dat[2] <= 2.*m)]
 	if useful:
 		result = min(useful, key=lambda x: math.fabs(x[2]-m))
-		#if (-1. < result[0] < 0.):
-		#print result
 		return result
 	else:
 		return False
@@ -204,33 +197,17 @@ def makeCountours(data,m):
 	p1 = (-3., -5.)
 	p2 = (1.63, -7.7)
 	xAxis = []
-	#yAxis = []
 	for datum in data:
 		xAxis.append(datum[0])
-		#yAxis.append(datum[1])
 	xAxis = list(set(xAxis))
-	topContour = [datum for datum in data if inTopHalf(p1,p2,datum)] #isInTopContour(datum)]
-	botContour = [datum for datum in data if not inTopHalf(p1,p2,datum)] #isInBotContour(datum)]
-	#rightContour = [datum for datum in data if isInRightContour(datum)]
+	topContour = [datum for datum in data if inTopHalf(p1,p2,datum)]
+	botContour = [datum for datum in data if not inTopHalf(p1,p2,datum)]
 	# Now for every mass value select only the eps value with N closest to m
 	topContour = sorted(topContour, key=lambda x: x[0]) #sorted by mass
 	botContour = sorted(botContour, key=lambda x: x[0]) #sorted by mass
-	#rightContour = sorted(rightContour, key=lambda x: x[1]) #sorted by eps
 	top = []
 	bot = []
 	right = []
-
-	#for y in yAxis:
-	#	tempRight = []
-	#	for datum in rightContour:
-	#		if datum[1] == y:
-	#			tempRight.append(datum)
-	#	if tempRight:
-	#		bestPointRight = closest(tempRight,m)
-	#		if bestPointRight:
-	#			right.append((bestPointRight[0],y))
-	#right = list(set(right))
-
 	for x in xAxis:
 		tempTop = []
 		for datum in topContour:
@@ -240,8 +217,6 @@ def makeCountours(data,m):
 		for datum in botContour:
 			if datum[0] == x:
 				tempBot.append(datum)
-		#if (not tempBot) or (not tempTop):
-		#	print "error at x= ",x
 		if tempTop:
 			bestPointTop=closest(tempTop, m)
 			if bestPointTop:
@@ -252,7 +227,7 @@ def makeCountours(data,m):
 				bot.append((x, bestPointBot[1], bestPointBot[2]))
 	top = list(set(top))
 	bot = list(set(bot))
-	return top, bot#, right
+	return top, bot
 
 
 
@@ -294,10 +269,8 @@ def killDuplicates(data):
 
 if __name__ == '__main__':
 
-	#print alpha, beta, gamma, delta
-	#print a, b, c, d
 	existingData = loadDataFile()
-	data = makeSensitivityBelt(existingData, 80, 60, True)
+	data = makeSensitivityBelt(existingData, 80, 240, True)
 	""" arrive to 0.6 with 30 divisions
 	need to set up right contour """
 	existingData = convertToLog(existingData)
@@ -305,49 +278,17 @@ if __name__ == '__main__':
 	data = list(set(data))
 	data.sort(key=lambda x: x[1])
 	data.sort(key=lambda x: x[0])
-	#top, bottom, right = makeCountours(data,2.3)
 	top, bottom = makeCountours(data,2.3)
 	top.sort(key=lambda x: x[1])
 	top.sort(key=lambda x: x[0])
 	bottom.sort(key=lambda x: x[1])
-	bottom.sort(key=lambda x: x[0])
-	#right.sort(key=lambda x: x[0])
-	#right.sort(key=lambda x: -x[1]) #descending order in epsilon
-	"""
-	xt = []
-	yt = []
-	xb = []
-	yb = []
-	for point in top:
-		xt.append(point[0])
-		yt.append(point[1])
-	for point in bottom:
-		xb.append(point[0])
-		yb.append(point[1])
-	plt.ion()
-	plt.scatter(xt,yt)
-	plt.scatter(xb,yb)
-	mg = r.TMultiGraph()
-	tgr = r.TGraph(len(top),array('f',xt),array('f',yt))
-	bgr = r.TGraph(len(bottom),array('f',xb),array('f',yb))
-	tgr.SetMarkerStyle(8)
-	bgr.SetMarkerStyle(8)
-	mg.Add(tgr)
-	mg.Add(bgr)
-	mg.Draw("acp")
-	mg.GetXaxis().SetTitle(r"log_{10}M_{A}")
-	mg.GetYaxis().SetTitle(r"log_{10}#varepsilon")
-	"""
 	bottom.sort(key= lambda x:-x[0])
-	num = len(top) + len(bottom)# + len(right)
+	num = len(top) + len(bottom)
 	grtot = r.TGraph(num)
 	for i in xrange(len(top)):
 		grtot.SetPoint(i,top[i][0],top[i][1])
-	#for k in xrange(len(right)):
 	for k in xrange(len(bottom)):
-		grtot.SetPoint(len(top)+k, bottom[k][0],bottom[k][1])# right[k][0], right[k][1])
-	#for j in xrange(len(bottom)):
-	#	grtot.SetPoint(len(top)+len(right)+j,bottom[j][0],bottom[j][1])
+		grtot.SetPoint(len(top)+k, bottom[k][0],bottom[k][1])
 	grtot.SetMarkerStyle(20)
 	c1 = r.TCanvas()
 	grtot.Draw("alp")
@@ -355,7 +296,6 @@ if __name__ == '__main__':
 	grtot.GetXaxis().SetRangeUser(-3.,2.)
 	grtot.GetYaxis().SetTitle(r"log_{10}#varepsilon")
 	c1.SetGrid()
-	#whole = top+right+bottom
 	whole = top+bottom
 	c2 = r.TCanvas()
 	c2.cd()
