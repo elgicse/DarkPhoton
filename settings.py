@@ -27,6 +27,13 @@ res = {}
 mProton = 0.938 # GeV/c
 
 # experiment settings
+# NuCal1
+#protonEnergy = 70. # GeV/c
+#protonMomentum = momentum(protonEnergy,mProton)
+#protonFlux = 1.71*pow(10.,18.)
+#firstVolume = [64., 87., 2.6] # start, end, radius (m)
+#secondVolume = [110., 110., 2.6] # start, end, radius (m)
+# SHiP
 protonEnergy = 400. # GeV/c
 protonMomentum = momentum(protonEnergy,mProton)
 protonFlux = 2.*pow(10.,20.)

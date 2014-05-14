@@ -12,15 +12,29 @@ if __name__ == '__main__':
 	loadLibs()
 	pythia = r.TPythia8()
 	pythia.ReadString("SoftQCD:nonDiffractive = on")
-	pythia.ReadString("SoftQCD:singleDiffractive = on")
-	pythia.ReadString("SoftQCD:doubleDiffractive = on")
-	pythia.Initialize(2212, 2212, 14000.)
+	pythia.ReadString("Beams:idA = 2212")
+	pythia.ReadString("Beams:idB = 2212")
+	pythia.ReadString("Beams:frameType = 2")
+	pythia.ReadString("Beams:eA = 400.")
+	pythia.ReadString("Beams:eB = 0.")
+	pyt = pythia.Pythia8()
+	pyt.init()
 	nev = 10
-	parts = r.TClonesArray("TParticle", 1000)
-
 	for i in xrange(nev):
-	    pythia.GenerateEvent()
-	    pythia.ImportParticles(parts,"All")
-	    for p in xrange(parts.GetEntriesFast()):
-	        part = parts.At(p)
-	        print part.GetPdgCode()
+		pythia.GenerateEvent()
+		seen = []
+		print "Event %s: "%i, pyt.info.name()
+		names = [event[part].name() for part in pyt.event[0].daughterList()]
+		if i ==4:
+			print " ".join(childrenNames[:])
+		for p in xrange(pyt.event.size()):
+		    part = pyt.event[p]
+		    if (part.id() == 22) and (p not in seen):
+		    	mum = pyt.event[pyt.event[p].mother1()]
+		    	children = mum.daughterList()
+		    	seen.extend(list(children))
+		    	childrenList = []
+		    	for c in xrange(len(children)):
+		    		childrenList.append(pyt.event[children[c]])
+		    	childrenNames = [child.name() for child in childrenList]
+		    	print mum.name(), " ".join(childrenNames[:])

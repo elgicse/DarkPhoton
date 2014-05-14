@@ -90,13 +90,13 @@ def dNdPdTheta(p,theta,mDarkPhoton,epsilon):
 	return math.fabs(diffRate) # integrating in (-pi, pi)...
 
 def pMax(mDarkPhoton):
-	return math.sqrt( (energy(protonMomentum,mProton)**2. - mDarkPhoton**2.) - mDarkPhoton**2.)
+	return min(0.86*protonMomentum, math.sqrt( (energy(protonMomentum,mProton)**2. - mDarkPhoton**2.) - mDarkPhoton**2.))
 
 def prodRate(mDarkPhoton,epsilon, tmin = -0.5*math.pi, tmax = 0.5*math.pi):
 	""" dNdPdTheta integrated over p and theta """
 	integral = dblquad( dNdPdTheta, # integrand
 						tmin, tmax, # theta boundaries (2nd argument of integrand)
-						lambda x: 0., lambda x: pMax(mDarkPhoton), # p boundaries (1st argument of integrand)
+						lambda x: 0.14*protonMomentum, lambda x: pMax(mDarkPhoton), # p boundaries (1st argument of integrand)
 						args=(mDarkPhoton, epsilon) ) # extra parameters to pass to integrand
 	return integral[0]
 
@@ -332,7 +332,8 @@ def computeNEvents(mass, eps, binsp=90, binstheta=80):
 		brmu, acc1mu, acc2mu = 0., 0., 0.
 	expectedEvents = protonFlux * prodFrac * (fracV1 + fracV2)
 	#print prodFrac, prob1, prob2, bre, acc1e, acc2e, fracV1, fracV2, expectedEvents
-	with open("out/TextData/sensitivityScan.txt","a") as ofile:
+	#with open("out/TextData/sensitivityScan.txt","a") as ofile:
+	with open("out/TextData/sensitivityScanNuCal1.txt","a") as ofile:
 		try:
 			ofile.write("%s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s\n"%(mass, eps, prodFrac, prob1, prob2, bre, brmu, acc1e, acc2e, acc1mu, acc2mu, expectedEvents ))
 		except KeyboardInterrupt:
