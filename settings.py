@@ -100,3 +100,64 @@ def computeMass(lepton):
 		print "ERROR: child lepton undefined. Please select e, mu or tau"
 		ml = -1.
 	return ml
+
+# Boundaries for production in meson decays
+pi0Start = 0.
+pi0Stop = 0.13498
+etaStart = 0.13498
+etaStop = 0.54785
+omegaStart = 0.54785
+omegaStop = 0.64767
+eta1Start = 0.64767
+eta1Stop = 0.95778
+
+# Meson masses
+pi0Mass = 0.13498
+etaMass = 0.54785
+omegaMass = 0.78265
+eta1Mass = 0.95778
+
+# Meson decay to gamma branching ratios
+def computeMesonBR(mass):
+	if pi0Start < mass < pi0Stop:
+		# Using pi0 -> gamma gamma
+		# From http://pdg.lbl.gov/2013/listings/rpp2013-list-pi-zero.pdf
+		br = 98.82
+	elif etaStart < mass < etaStop:
+		# Using eta -> gamma gamma
+		# From http://pdg.lbl.gov/2013/listings/rpp2013-list-eta.pdf
+		br = 72.1
+	elif omegaStart < mass < omegaStop:
+		# Using omega -> pi0 gamma
+		# From http://pdg.lbl.gov/2013/listings/rpp2013-list-omega-782.pdf
+		br = 8.3
+	elif eta1Start < mass < eta1Stop:
+		# Using eta' -> gamma gamma
+		# From http://pdg.lbl.gov/2013/listings/rpp2013-list-eta-prime-958.pdf
+		br = 2.20
+	else:
+		print "ERROR: invalid A' mass for meson decay production"
+		return 0
+	return br/100.
+
+def computeScalingFactor(eps, mass):
+	phaseSpace = 0
+	if pi0Start < mass < pi0Stop:
+		motherMass = pi0Mass
+	elif etaStart < mass < etaStop:
+		motherMass = etaMass
+	elif omegaStart < mass < omegaStop:
+		motherMass = omegaMass
+		phaseSpace = ( 0.5 * pow(motherMass**2. - pi0Mass**2. - mass**2., 2.)
+			* math.sqrt( pow((motherMass**2. + pi0Mass**2. - mass**2.), 2.) - 4.*(motherMass**2.)*(pi0Mass**2.) )
+			/ pow(motherMass**2. - mass**2., 3.) )
+	elif eta1Start < mass < eta1Stop:
+		motherMass = eta1Mass
+	else:
+		print "ERROR: invalid A' mass for meson decay production"
+		return 0
+	if not phaseSpace:
+		phaseSpace = pow((1.- (mass*mass)/(motherMass*motherMass)), 3.)
+	br = computeMesonBR(mass)
+	factor = 2.*eps*eps*phaseSpace*br
+	return factor

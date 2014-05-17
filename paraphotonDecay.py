@@ -63,9 +63,15 @@ def makeNtupleDecayRestFrame(lepton,mDarkPhoton,nEvents=10000):
 	outFile.Close()
 
 
-def boostChildrenInAcceptance(lepton,mass,eps,volume,nMaxChildren=0):
-	rfFile = r.TFile("out/NTuples/childrenRestFrame_%s_m%s.root"%(computeName(lepton),mass),"read")
-	paraphFile = r.TFile("out/NTuples/ParaPhoton_eps%s_m%s.root"%(eps,mass),"read")
+def boostChildrenInAcceptance(lepton,mass,eps,volume,mesonDecay,nMaxChildren=0):
+	rfFile = r.TFile("out/NTuples/childrenRestFrame_%s_m%s.root"%(computeName(lepton),mass),
+		"read")
+	if not mesonDecay:
+		paraphFile = r.TFile("out/NTuples/ParaPhoton_eps%s_m%s.root"%(eps,mass),
+			"read")
+	else:
+		paraphFile = r.TFile("out/PythiaData/mesonDecays_%s.root"%mass,
+			"read")	
 	rfTree = rfFile.Get("decayRF")
 	hpdf1 = paraphFile.Get("hPDFinAcc%s_eps%s_m%s"%(volume,eps,mass))
 	#hpdf2 = paraphFile.Get("hPDFinAcc%s_eps%s_m%s"%(eps,mass))

@@ -206,13 +206,26 @@ def create4Momenta(mDarkPhoton,epsilon,norm,nEvents=10000,tmin = -0.5*math.pi, t
 	outfile.Close()
 
 
-def scanPDF(mass, eps):
+def scanPDF(mass, eps, mesonDecay=False):
 	outData = []
 	ct = cTau(mass, eps)
-	f = r.TFile("out/NTuples/ParaPhoton_eps%s_m%s.root"%(eps,mass),"update")
-	hpdf = f.Get("hPDF_eps%s_m%s"%(eps,mass))
-	DeltaTheta = hpdf.GetYaxis().GetBinCenter(1)-hpdf.GetYaxis().GetBinCenter(0)
-	DeltaP = hpdf.GetXaxis().GetBinCenter(1)-hpdf.GetXaxis().GetBinCenter(0)
+	# Use the right file
+	if not mesonDecay:
+		f = r.TFile("out/NTuples/ParaPhoton_eps%s_m%s.root"%(eps,mass),
+			"update")
+		hpdf = f.Get("hPDF_eps%s_m%s"%(eps,mass))
+	elif mesonDecay:
+		f = r.TFile("out/PythiaData/mesonDecays_%s.root"%mass,
+			"update")
+		hpdforig = f.Get("hPDF_m%s"%mass)
+		hpdf = hpdforig.Clone("hpdf")
+		integr = hpdf.Integral("width")
+		hpdf.Scale(1./integr)
+	# Get the binning of the original PDF
+	DeltaTheta = (hpdf.GetYaxis().GetBinCenter(1)
+		-hpdf.GetYaxis().GetBinCenter(0))
+	DeltaP = (hpdf.GetXaxis().GetBinCenter(1)
+		-hpdf.GetXaxis().GetBinCenter(0))
 	ThetaMax = hpdf.GetYaxis().GetXmax()
 	ThetaMin = hpdf.GetYaxis().GetXmin()
 	RangeTheta = ThetaMax - ThetaMin
@@ -224,9 +237,12 @@ def scanPDF(mass, eps):
 	nTheta = hpdf.GetYaxis().GetNbins()
 	fourMom = r.TLorentzVector()
 	vec = r.TVector3()
-	hPdfAcc1 = r.TH2F("hPDFinAcc1_eps%s_m%s"%(eps,mass),"hPDFinAcc1_eps%s_m%s"%(eps,mass),
+	# Make PDFs rescaled to the acceptance of the experiment
+	hPdfAcc1 = r.TH2F("hPDFinAcc1_eps%s_m%s"%(eps,mass),
+		"hPDFinAcc1_eps%s_m%s"%(eps,mass),
 		nMom,PMin,PMax,nTheta,ThetaMin,ThetaMax)
-	hPdfAcc2 = r.TH2F("hPDFinAcc2_eps%s_m%s"%(eps,mass),"hPDFinAcc2_eps%s_m%s"%(eps,mass),
+	hPdfAcc2 = r.TH2F("hPDFinAcc2_eps%s_m%s"%(eps,mass),
+		"hPDFinAcc2_eps%s_m%s"%(eps,mass),
 		nMom,PMin,PMax,nTheta,ThetaMin,ThetaMax)
 	index = 0
 	valAcc1 = 0.
@@ -249,6 +265,7 @@ def scanPDF(mass, eps):
 				fourMom.SetVect(vec)
 				gamma = fourMom.Gamma()
 				px = fourMom.Px()
+				#py = fourMom.Py()
 				pz = fourMom.Pz()
 				accGeo1 = GeometricAcceptance(px, pz, 1)
 				accGeo2 = GeometricAcceptance(px, pz, 2)
@@ -285,30 +302,39 @@ def scanPDF(mass, eps):
 	return valAcc1, valAcc2, outData
 
 
-def makeAcceptancePdf(mass, eps, binsp, binstheta):
+def makeAcceptancePdf(mass, eps, binsp, binstheta, mesonDecay):
 	tmax = v1ThetaMax
 	tmin = (-1.)*tmax
-	norm=prodRate(mass, eps, tmin, tmax)
+	if not mesonDecay:
+		norm = prodRate(mass, eps, tmin, tmax)
+	else:
+		norm = prodRateFromMesons(mass)
 	#print "prodrate in %s, %s: %s"%(tmin,tmax, norm)
-	if not os.path.isfile("out/NTuples/ParaPhoton_eps%s_m%s.root"%(eps,mass)):
+	if (not mesonDecay) and (not os.path.isfile("out/NTuples/ParaPhoton_eps%s_m%s.root"%(eps,mass))):
 		hProdPDF(mass, eps, norm, binsp, binstheta, tmin, tmax)
-	valAcc1, valAcc2, outData = scanPDF(mass, eps)
+	valAcc1, valAcc2, outData = scanPDF(mass, eps, mesonDecay)
 	return norm, valAcc1, valAcc2, outData
 
 
-def computeNEvents(mass, eps, binsp=90, binstheta=80):
-	outData = makeAcceptancePdf(mass, eps, binsp, binstheta)
+def computeNEvents(mass, eps, mesonDecay=False, binsp=90, binstheta=80):
+	outData = makeAcceptancePdf(mass, eps, binsp, binstheta, mesonDecay)
 	prodFrac = outData[0]
+	# Meson decay ntuples also produce A's out of the acceptances
+	if mesonDecay:
+		# This is what we do with p -> p+A',
+		# we integrate the PDF in the acceptance of volume 1
+		prodFrac = prodFrac * geomAcceptance(mass, 1)
+	# P(vtx in volume)
 	prob1 = outData[1]
 	prob2 = outData[2]
 	if prob1 or prob2:
 		makeNtupleDecayRestFrame(e,mass,200)
 	if prob1:
-		acc1e = boostChildrenInAcceptance(e,mass,eps,1,200)
+		acc1e = boostChildrenInAcceptance(e,mass,eps,1,200,mesonDecay)
 	else:
 		acc1e = 0.
 	if prob2:
-		acc2e = boostChildrenInAcceptance(e,mass,eps,2,200)
+		acc2e = boostChildrenInAcceptance(e,mass,eps,2,200,mesonDecay)
 	else:
 		acc2e = 0.
 	bre = leptonicBranchingRatio(mass, eps, e)
@@ -331,11 +357,20 @@ def computeNEvents(mass, eps, binsp=90, binstheta=80):
 		fracV2 = prob2 * bre*acc2e
 		brmu, acc1mu, acc2mu = 0., 0., 0.
 	expectedEvents = protonFlux * prodFrac * (fracV1 + fracV2)
+	if mesonDecay:
+		factor = computeScalingFactor(eps, mass)
+		expectedEvents = expectedEvents * factor
+		outFilePath = "out/TextData/sensitivityScan-MesonDecays.txt"
+	else:
+		outFilePath = "out/TextData/sensitivityScan.txt"
 	#print prodFrac, prob1, prob2, bre, acc1e, acc2e, fracV1, fracV2, expectedEvents
-	#with open("out/TextData/sensitivityScan.txt","a") as ofile:
-	with open("out/TextData/sensitivityScanNuCal1.txt","a") as ofile:
+	with open(outFilePath,"a") as ofile:
+	#with open("out/TextData/sensitivityScanNuCal1.txt","a") as ofile:
 		try:
-			ofile.write("%s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s\n"%(mass, eps, prodFrac, prob1, prob2, bre, brmu, acc1e, acc2e, acc1mu, acc2mu, expectedEvents ))
+			if mesonDecay:
+				ofile.write("%s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s\n"%(mass, eps, prodFrac, prob1, prob2, bre, brmu, acc1e, acc2e, acc1mu, acc2mu, factor, expectedEvents ))
+			else:
+				ofile.write("%s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s\n"%(mass, eps, prodFrac, prob1, prob2, bre, brmu, acc1e, acc2e, acc1mu, acc2mu, expectedEvents ))
 		except KeyboardInterrupt:
 			pass
 	return expectedEvents

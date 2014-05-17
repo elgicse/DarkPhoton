@@ -1,5 +1,6 @@
 from __future__ import division
 import math
+import os
 import ROOT as r
 import numpy as np
 from array import array
@@ -168,28 +169,58 @@ def GeometricAcceptance(px, pz, volume):
 		print "ERROR: select decay volume 1 or 2"
 		return 0
 	#print vol[1]
+	#pt = math.sqrt(px*px + py*py)
+	# Check theta
 	if (math.fabs((px/pz)*vol[1])<vol[2]) and (pz>0):
 		return True
 	return False
 
 
+def prodRateFromMesons(mass):
+	if pi0Start < mass < pi0Stop:
+		chi = 5.41
+	elif etaStart < mass < etaStop:
+		chi = 0.2314
+	elif omegaStart < mass < omegaStop:
+		chi = 0.0694
+	elif eta1Start < mass < eta1Stop:
+		chi = 0.00141
+	else:
+		print "ERROR: invalid A' mass for meson decay production"
+		return 0
+	return chi
 
 
+# Functions for meson decay production
+def getTree(mass):
+	outfile = r.TFile("out/PythiaData/mesonDecays_%s.root"%mass,"read")
+	tree = outfile.Get("mesonDecays")
+	return tree
 
 
-
-# Contour for fast sensitivity scan
-# defined by the area around 4 straight lines
-# in a double logarithmic plane
-#alpha = 
-#beta = 
-#gamma = 
-#delta =
-#m1 =
-#m2 =
-#m3 =
-#m4 =
-
+def geomAcceptance(mass, volume):
+	if volume == 1:
+		tmax = v1ThetaMax
+	elif volume == 2:
+		tmax = v2ThetaMax
+	else:
+		print "ERROR: select fiducial volume 1 or 2"
+		return -1
+	if not os.path.isfile("out/PythiaData/mesonDecays_%s.root"%mass):
+		print "ERROR: could not find tree for m(A') = %s"%mass
+		return -1
+	outfile = r.TFile("out/PythiaData/mesonDecays_%s.root"%mass,"read")
+	tree = outfile.Get("mesonDecays")
+	#tree = getTree(mass)
+	#print tree
+	#if not tree:
+	#	print "ERROR: could not find tree for m(A') = %s"%mass
+	nTot = tree.GetEntriesFast()
+	nAcc = 0
+	for event in tree:
+		if math.fabs(event.A_Theta) < tmax:
+			nAcc += 1
+	return nAcc / nTot
 
 
 
