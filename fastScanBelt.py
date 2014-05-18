@@ -49,8 +49,9 @@ ye = [-5.8, -8.0]
 sl1 = (-7.5+2.4)/(1.3+3.0)
 sl2 = (-8.0+6.6)/(1.3+3.0)
 # ystart (upper, lower)
-newy1 = [-1.9, -2.9]
-newy2 = [-6.1, -7.1]
+newy1 = [-1.8, -2.9]
+#newy2 = [-6.1, -7.1]
+newy2 = [-5.9, -7.2]
 
 
 def eq(n1, n2, toll = 1.e-01):
@@ -127,7 +128,7 @@ def makeSensitivityBelt(existingData, ndivx, ndivy=240, verbose=0):
 		logeps = roundToN(point[1])
 		datum = ( logmass, logeps, n)
 		if verbose:
-			if not i%1000:
+			if not i%100:
 				print "Point %s of %s: \t log10(mass) %s \t log10(eps) %s \t\t Events: %s"%(i, len(points), logmass, logeps, n)
 		data.append(datum)
 		gc.collect()
@@ -195,8 +196,10 @@ def eq(n1, n2, toll = 1.e-01):
 
 
 def makeCountours(data,m):
-	p1 = (-3., -5.)
-	p2 = (1.63, -7.7)
+	#p1 = (-3., -5.)
+	p1 = (-3., -5.5)
+	#p2 = (1.63, -7.7)
+	p2 = (1.5, -7.6)
 	xAxis = []
 	for datum in data:
 		xAxis.append(datum[0])
@@ -233,10 +236,10 @@ def makeCountours(data,m):
 
 
 def loadDataFile():
-	if not os.path.isfile("out/TextData/sensitivityScan.txt"):
+	if not os.path.isfile("out/TextData/sensitivityScan-FWapprox.txt"):
 		return 0
 	data = []
-	with open("out/TextData/sensitivityScan.txt","r") as ifile:
+	with open("out/TextData/sensitivityScan-FWapprox.txt","r") as ifile:
 		for line in ifile:
 			line = line.split()
 			data.append( ( roundToN(float(line[0])),
