@@ -167,7 +167,7 @@ def makePDF(howmany, mass, binsp=90, binstheta=40):
 		    	#	childrenList.append(pyt.event[children[c]])
 		    	#childrenNames = [child.name() for child in childrenList]
 		    	#print (mum.name() + " " + " ".join(childrenNames[:]))
-
+		del seen
 	tree.Write("",5) # TObject::kOverwrite
 	hPDF.Write("",5)
 	hPDFp.Write("",5)

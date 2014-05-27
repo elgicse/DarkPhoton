@@ -54,6 +54,11 @@ def lifetime(mDarkPhoton, epsilon):
 	c = 3.*pow(10.,8.)
 	return cTau(mDarkPhoton, epsilon)/c
 
+def lifetime100ms(mass):
+	rad = 0.8/(3.*mass*(1+Ree_interp(mass)))
+	return math.sqrt(rad)*pow(10.,-10.5)
+
+
 #def Ree(s): # s in MeV
 #	""" sigma(e+e- -> hadrons) / sigma(e+e- -> mu+mu-) """
 #	if s > 2.*mt:

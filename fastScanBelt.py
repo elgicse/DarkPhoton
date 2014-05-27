@@ -11,6 +11,8 @@ from array import array
 
 from settings import *
 from proton_bremsstrahlung import *
+from productionInDecays import *
+from dark_photon import lifetime100ms
 
 upper = "upper"
 lower = "lower"
@@ -20,7 +22,7 @@ lower = "lower"
 #delta = 0.11
 #min([i for i in [a + n*delta for n in xrange(100)] if int(i) == i ])
 
-
+############## P Brem ####################################
 # slope values
 alpha0 = -1.*1.5/2.
 alpha = -1.*1./2.
@@ -42,7 +44,6 @@ yc = [-7.5, math.log10(9.e-09)]#[math.log10(7.e-08), math.log10(9.e-09)]
 yd = [math.log10(1.e-06), math.log10(9.e-08)]#[math.log10(2.e-06), math.log10(9.e-08)]
 ye = [-5.8, -8.0]
 
-
 # new belts (only 2) after seeing the actual shape
 # domain: (a, e) = (-3.0, 1.8)
 # slopes
@@ -52,6 +53,22 @@ sl2 = (-8.0+6.6)/(1.3+3.0)
 newy1 = [-1.8, -2.9]
 #newy2 = [-6.1, -7.1]
 newy2 = [-5.9, -7.2]
+############## P Brem ####################################
+
+
+############## Mesons ####################################
+# new belts (only 2) after seeing the actual shape
+# domain: (a, e) = (-3.0, 1.8)
+# slopes
+msl1 = (-7.+2.5)/(1.+3.0)
+msl2 = 0.
+# ystart (upper, lower)
+mnewy1 = [-2,1, -3.1]
+#newy2 = [-6.1, -7.1]
+mnewy2 = [-7.2, -8.5]
+me = math.log10(eta1Stop)
+############## Mesons ####################################
+
 
 
 def eq(n1, n2, toll = 1.e-01):
@@ -87,6 +104,13 @@ def beltSegment(pos, ystart, xstart, slope, x):
 	return start - slope*xstart + slope*x
 
 
+def inBeltMesons((x,y)):
+	if (a < x < e) and (beltSegment(lower, mnewy1, a, msl1, x) < y < beltSegment(upper, mnewy1, a, msl1, x)):
+		return True
+	elif (a < x < e) and (beltSegment(lower, mnewy2, a, msl2, x) < y < beltSegment(upper, mnewy2, a, msl2, x)):
+		return True
+	return False
+
 
 def inBelt((x,y)):
 	# old belt segments:
@@ -110,8 +134,11 @@ def inBelt((x,y)):
 	return False
 
 
-def makeSensitivityBelt(existingData, ndivx, ndivy=240, verbose=0):
-	points = [(x,y) for x in np.linspace(a, e, ndivx) for y in np.linspace(-9.1, -2.5, ndivy) if inBelt((x,y))]
+def makeSensitivityBelt(existingData, ndivx, ndivy, verbose=0, mesonDecay=False):
+	if mesonDecay:
+		points = [(x,y) for x in np.linspace(a, e, ndivx) for y in np.linspace(-9.1, -2.5, ndivy) if (inBeltMesons((x,y)) and x<me)]
+	else:
+		points = [(x,y) for x in np.linspace(a, e, ndivx) for y in np.linspace(-9.1, -2.5, ndivy) if inBelt((x,y))]
 	data = []
 	for i,point in enumerate(points):
 		found = False
@@ -123,15 +150,26 @@ def makeSensitivityBelt(existingData, ndivx, ndivy=240, verbose=0):
 				n = oldDatum[2]
 				break
 		if not found:
-			n = roundToN( computeNEvents(mass, eps) )
+			if not mesonDecay:
+				n = roundToN( computeNEvents(mass, eps) )
+			else:
+				if not os.path.isfile("out/PythiaData/mesonDecays_%s.root"%mass):
+					if mass < 0.54785:
+						nev = 1000
+					else:
+						nev = 5000
+					makePDF(nev, mass)
+					gc.collect()
+				n = roundToN( computeNEvents(mass, eps, True) )
 		logmass = roundToN(point[0])
 		logeps = roundToN(point[1])
 		datum = ( logmass, logeps, n)
 		if verbose:
 			if not i%100:
 				print "Point %s of %s: \t log10(mass) %s \t log10(eps) %s \t\t Events: %s"%(i, len(points), logmass, logeps, n)
+				gc.collect()
 		data.append(datum)
-		gc.collect()
+		#gc.collect()
 	return data
 
 
@@ -235,11 +273,14 @@ def makeCountours(data,m):
 
 
 
-def loadDataFile():
-	if not os.path.isfile("out/TextData/sensitivityScan-FWapprox.txt"):
+def loadDataFile(mesonDecay = False):
+	filepath = "out/TextData/sensitivityScan-FWapprox.txt"
+	if mesonDecay:
+		filepath = "out/TextData/sensitivityScan-MesonDecays.txt"
+	if not os.path.isfile(filepath):
 		return 0
 	data = []
-	with open("out/TextData/sensitivityScan-FWapprox.txt","r") as ifile:
+	with open(filepath,"r") as ifile:
 		for line in ifile:
 			line = line.split()
 			data.append( ( roundToN(float(line[0])),
@@ -274,7 +315,8 @@ def killDuplicates(data):
 if __name__ == '__main__':
 
 	existingData = loadDataFile()
-	data = makeSensitivityBelt(existingData, 80, 240, True)
+	verbose = True
+	data = makeSensitivityBelt(existingData, 80, 240, verbose)
 	""" arrive to 0.6 with 30 divisions
 	need to set up right contour """
 	existingData = convertToLog(existingData)
@@ -294,12 +336,37 @@ if __name__ == '__main__':
 	for k in xrange(len(bottom)):
 		grtot.SetPoint(len(top)+k, bottom[k][0],bottom[k][1])
 	grtot.SetMarkerStyle(20)
-	c1 = r.TCanvas()
-	grtot.Draw("alp")
-	grtot.GetXaxis().SetTitle(r"log_{10}M_{A}")
-	grtot.GetXaxis().SetRangeUser(-3.,2.)
-	grtot.GetYaxis().SetTitle(r"log_{10}#varepsilon")
-	c1.SetGrid()
+
+	mesonDecay = True
+	existingDataMesons = loadDataFile(mesonDecay)
+	dataMesons = makeSensitivityBelt(existingDataMesons, 40, 240, verbose, mesonDecay)
+	existingDataMesons = convertToLog(existingDataMesons)
+	dataMesons.extend(existingDataMesons)
+	dataMesons = list(set(dataMesons))
+	dataMesons.sort(key=lambda x: x[1])
+	dataMesons.sort(key=lambda x: x[0])
+	mtop, mbottom = makeCountours(dataMesons,2.3)
+	mtop.sort(key=lambda x: x[1])
+	mtop.sort(key=lambda x: x[0])
+	mbottom.sort(key=lambda x: x[1])
+	mbottom.sort(key= lambda x:-x[0])
+	mwhole = mtop + mbottom
+	mgrtotlog = r.TGraph(len(mwhole))
+	for i in xrange(len(mwhole)):
+		mgrtotlog.SetPoint(i, pow(10.,mwhole[i][0]), pow(10.,mwhole[i][1]))
+	mgrtotlog.SetLineColor(r.kBlue)
+	mgrtotlog.SetMarkerColor(r.kBlue)
+	mgrtotlog.SetLineWidth(4)
+	mgrtotlog.SetTitle("SHiP sensitivity: mesons #rightarrow #gamma' X")
+
+
+	#c1 = r.TCanvas()
+	#grtot.Draw("alp")
+	#grtot.GetXaxis().SetTitle(r"log_{10}M_{A}")
+	#grtot.GetXaxis().SetRangeUser(-3.,2.)
+	#grtot.GetYaxis().SetTitle(r"log_{10}#varepsilon")
+	#c1.SetGrid()
+
 	whole = top+bottom
 	#c2 = r.TCanvas()
 	#c2.cd()
@@ -314,6 +381,27 @@ if __name__ == '__main__':
 	#c2.SetLogx()
 	#c2.SetLogy()
 
+	botTotal = [x for x in bottom if pow(10.,x[0]) > 0.42]
+	botTotal.extend([x for x in mbottom if pow(10.,x[0]) < 0.42])
+	wholeTotal = top + botTotal
+	grTotal = r.TGraph(len(wholeTotal))
+	for i in xrange(len(wholeTotal)):
+		grTotal.SetPoint(i, pow(10.,wholeTotal[i][0]), pow(10.,wholeTotal[i][1]))
+	grTotal.SetLineColor(r.kBlue)
+	grTotal.SetMarkerColor(r.kBlue)
+	grTotal.SetLineWidth(4)
+	grTotal.SetTitle("SHiP sensitivity")
+
+	lifetimeContourM = [pow(10.,x) for x in np.linspace(a, e, 120)]
+	lifetimeContourEps = [lifetime100ms(x) for x in lifetimeContourM]
+	r_lifetimeM = array('f', lifetimeContourM)
+	r_lifetimeEps = array('f', lifetimeContourEps)
+	grLifetimeLimit = r.TGraph(len(r_lifetimeM), r_lifetimeM, r_lifetimeEps)
+	grLifetimeLimit.SetMarkerColor(r.kBlack)
+	grLifetimeLimit.SetLineColor(r.kBlack)
+	grLifetimeLimit.SetLineWidth(-3502)
+	grLifetimeLimit.SetFillStyle(3002)
+
 	# Plot on top of the old limits
 	current_mass = []
 	current_eps = []
@@ -326,26 +414,49 @@ if __name__ == '__main__':
 	
 	current_r_mass = array('f', current_mass)
 	current_r_eps = array('f', current_eps)
-	
 	gr_curr = r.TGraph(len(current_r_mass), current_r_mass, current_r_eps)
 	gr_curr.SetLineWidth(3504)
 	gr_curr.SetFillStyle(3002)
 	gr_curr.SetLineColor(r.kGray+2)
-	gr_curr.SetTitle("Current limits on hidden photons")
+	gr_curr.SetTitle("Current limits on dark photons")
+
+	# Plot on top of minoboone
+	miniboone_mass = []
+	miniboone_eps = []
+	
+	with open("miniboone.csv","r") as f_current:
+		for line in f_current:
+			line = line.split(",")
+			miniboone_mass.append(float(line[0]))
+			miniboone_eps.append(float(line[1]))
+	
+	miniboone_r_mass = array('f', miniboone_mass)
+	miniboone_r_eps = array('f', miniboone_eps)
+	miniboone = r.TGraph(len(miniboone_r_mass), miniboone_r_mass, miniboone_r_eps)
+	miniboone.SetLineWidth(3504)
+	miniboone.SetFillStyle(3002)
+	miniboone.SetLineColor(r.kOrange)
+	miniboone.SetTitle("MiniBooNE sensitivity")
+	
 	#gr_curr.Draw("alp")
 	grtotlog.SetLineColor(r.kRed-4)
 	grtotlog.SetMarkerColor(r.kRed-4)
 	grtotlog.SetLineWidth(4)
+	grtotlog.SetTitle("SHiP sensitivity: p #rightarrow p + #gamma'")
 	c3 = r.TCanvas()
 	c3.cd()
 	c3.SetLogx()
 	c3.SetLogy()
 	mgr = r.TMultiGraph()
 	mgr.Add(gr_curr)
-	mgr.Add(grtotlog)
+	#mgr.Add(miniboone)
+	#mgr.Add(grLifetimeLimit)
+	#mgr.Add(mgrtotlog)
+	#mgr.Add(grtotlog)
+	mgr.Add(grTotal)
 	mgr.Draw("alp")
 	mgr.GetXaxis().SetTitle(r"m_{#gamma'} (GeV)")
-	mgr.GetYaxis().SetTitle(r"#chi")
+	mgr.GetYaxis().SetTitle(r"#varepsilon")
 	mgr.GetXaxis().SetTitleSize(0.05)
 	mgr.GetYaxis().SetTitleSize(0.05)
 	mgr.GetXaxis().SetTitleOffset(0.90)

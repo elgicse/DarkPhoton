@@ -28,17 +28,18 @@ mProton = 0.938 # GeV/c
 
 # experiment settings
 # NuCal1
-#protonEnergy = 70. # GeV/c
-#protonMomentum = momentum(protonEnergy,mProton)
-#protonFlux = 1.71*pow(10.,18.)
-#firstVolume = [64., 87., 2.6] # start, end, radius (m)
-#secondVolume = [110., 110., 2.6] # start, end, radius (m)
-# SHiP
-protonEnergy = 400. # GeV/c
+protonEnergy = 70. # GeV/c
 protonMomentum = momentum(protonEnergy,mProton)
-protonFlux = 2.*pow(10.,20.)
-firstVolume = [60., 100., 2.5] # start, end, radius (m)
-secondVolume = [110., 150., 2.5] # start, end, radius (m)
+protonFlux = 1.71*pow(10.,18.)
+firstVolume = [64., 87., 2.6] # start, end, radius (m)
+secondVolume = [110., 110., 2.6] # start, end, radius (m)
+## SHiP
+#protonEnergy = 400. # GeV/c
+#protonMomentum = momentum(protonEnergy,mProton)
+#protonFlux = 2.*pow(10.,20.)
+#firstVolume = [60., 100., 2.5] # start, end, radius (m)
+#secondVolume = [110., 150., 2.5] # start, end, radius (m)
+
 v1ThetaMax = firstVolume[2]/firstVolume[0]
 v2ThetaMax = secondVolume[2]/secondVolume[0]
 

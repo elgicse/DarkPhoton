@@ -89,16 +89,20 @@ def dNdPdTheta(p,theta,mDarkPhoton,epsilon):
 	diffRate = dNdZdPtSquare(p,mDarkPhoton,theta,epsilon) * dPt2dTheta(p,theta) * dZdP(p,theta)
 	return math.fabs(diffRate) # integrating in (-pi, pi)...
 
+def pMin(mDarkPhoton):
+	return max(0.14*protonMomentum, mDarkPhoton)
+	#return 0.
+
 def pMax(mDarkPhoton):
-	#return min(0.86*protonMomentum, math.sqrt( (energy(protonMomentum,mProton)**2. - mDarkPhoton**2.) - mDarkPhoton**2.))
-	return math.sqrt( (energy(protonMomentum,mProton)**2. - mDarkPhoton**2.) - mDarkPhoton**2.)
+	return min(0.86*protonMomentum, math.sqrt( (energy(protonMomentum,mProton)**2. - mDarkPhoton**2.) - mDarkPhoton**2.))
+	#return math.sqrt( (energy(protonMomentum,mProton)**2. - mDarkPhoton**2.) - mDarkPhoton**2.)
 
 def prodRate(mDarkPhoton,epsilon, tmin = -0.5*math.pi, tmax = 0.5*math.pi):
 	""" dNdPdTheta integrated over p and theta """
 	integral = dblquad( dNdPdTheta, # integrand
 						tmin, tmax, # theta boundaries (2nd argument of integrand)
 						#lambda x: 0.14*protonMomentum, lambda x: pMax(mDarkPhoton), # p boundaries (1st argument of integrand)
-						lambda x: 0., lambda x: pMax(mDarkPhoton), # p boundaries (1st argument of integrand)
+						lambda x: pMin(mDarkPhoton), lambda x: pMax(mDarkPhoton), # p boundaries (1st argument of integrand)
 						args=(mDarkPhoton, epsilon) ) # extra parameters to pass to integrand
 	return integral[0]
 
@@ -129,10 +133,10 @@ def hProdPDF(mDarkPhoton,epsilon,norm,binsp,binstheta,tmin = -0.5*math.pi, tmax 
 	#momentumStep = 0.05 # GeV
 	#ndiv = int(math.floor(protonMomentum/momentumStep))
 	#momenta = np.linspace(momentumStep,protonMomentum,ndiv,endpoint=False).tolist()
-	momentumStep = pMax(mDarkPhoton)/binsp
-	momenta = np.linspace(momentumStep,pMax(mDarkPhoton),binsp,endpoint=False).tolist()
+	momentumStep = (pMax(mDarkPhoton)-pMin(mDarkPhoton))/binsp
+	momenta = np.linspace(pMin(mDarkPhoton),pMax(mDarkPhoton),binsp,endpoint=False).tolist()
 	hPDF = r.TH2F("hPDF_eps%s_m%s"%(epsilon,mDarkPhoton) ,"hPDF_eps%s_m%s"%(epsilon,mDarkPhoton),
-		binsp,0.5*momentumStep,pMax(mDarkPhoton)-0.5*momentumStep,
+		binsp,pMin(mDarkPhoton)+0.5*momentumStep,pMax(mDarkPhoton)-0.5*momentumStep,
 		binstheta,tmin-0.5*anglestep,tmax+0.5*anglestep)
 	hPDF.SetTitle("PDF for A' production (m_{A'}=%s GeV, #epsilon =%s)"%(mDarkPhoton,epsilon))
 	hPDF.GetXaxis().SetTitle("P_{A'} [GeV]")
@@ -142,7 +146,7 @@ def hProdPDF(mDarkPhoton,epsilon,norm,binsp,binstheta,tmin = -0.5*math.pi, tmax 
 		binstheta,tmin-0.5*anglestep,tmax+0.5*anglestep)
 	hPDFp = r.TH1F("hPDFp_eps%s_m%s"%(epsilon,mDarkPhoton),
 		"hPDFp_eps%s_m%s"%(epsilon,mDarkPhoton),
-		binsp,0.5*momentumStep,pMax(mDarkPhoton)-0.5*momentumStep)
+		binsp,pMin(mDarkPhoton)+0.5*momentumStep,pMax(mDarkPhoton)-0.5*momentumStep)
 	hPDFp.GetXaxis().SetTitle("P_{A'} [GeV]")
 	hPDFtheta.GetXaxis().SetTitle("#theta_{A'} [rad]")
 	for theta in angles:
@@ -221,7 +225,12 @@ def scanPDF(mass, eps, mesonDecay=False):
 		f = r.TFile("out/PythiaData/mesonDecays_%s.root"%mass,
 			"update")
 		hpdforig = f.Get("hPDF_m%s"%mass)
-		hpdf = hpdforig.Clone("hpdf")
+		try:
+			hpdf = hpdforig.Clone("hpdf")
+		except ReferenceError:
+			print mass, eps
+			hpdforig = f.Get("hPDF_m%s;1"%mass)
+			hpdf = hpdforig.Clone("hpdf")
 		integr = hpdf.Integral("width")
 		hpdf.Scale(1./integr)
 	# Get the binning of the original PDF
@@ -232,9 +241,9 @@ def scanPDF(mass, eps, mesonDecay=False):
 	ThetaMax = hpdf.GetYaxis().GetXmax()
 	ThetaMin = hpdf.GetYaxis().GetXmin()
 	RangeTheta = ThetaMax - ThetaMin
-	PMax = hpdf.GetXaxis().GetXmax()
-	PMin = hpdf.GetXaxis().GetXmin()
-	RangeP = PMax - PMin 
+	P_Max = hpdf.GetXaxis().GetXmax()
+	P_Min = hpdf.GetXaxis().GetXmin()
+	RangeP = P_Max - P_Min 
 	binRelSize = (DeltaP*DeltaTheta)#/(RangeTheta/RangeP)
 	nMom = hpdf.GetXaxis().GetNbins()
 	nTheta = hpdf.GetYaxis().GetNbins()
@@ -243,10 +252,10 @@ def scanPDF(mass, eps, mesonDecay=False):
 	# Make PDFs rescaled to the acceptance of the experiment
 	hPdfAcc1 = r.TH2F("hPDFinAcc1_eps%s_m%s"%(eps,mass),
 		"hPDFinAcc1_eps%s_m%s"%(eps,mass),
-		nMom,PMin,PMax,nTheta,ThetaMin,ThetaMax)
+		nMom,P_Min,P_Max,nTheta,ThetaMin,ThetaMax)
 	hPdfAcc2 = r.TH2F("hPDFinAcc2_eps%s_m%s"%(eps,mass),
 		"hPDFinAcc2_eps%s_m%s"%(eps,mass),
-		nMom,PMin,PMax,nTheta,ThetaMin,ThetaMax)
+		nMom,P_Min,P_Max,nTheta,ThetaMin,ThetaMax)
 	index = 0
 	valAcc1 = 0.
 	valAcc2 = 0.
@@ -288,8 +297,9 @@ def scanPDF(mass, eps, mesonDecay=False):
 		#print valAcc1, totWeight1
 		normalization1 = 1./totWeight1
 		hPdfAcc1.Scale(normalization1)
-		if not f.GetListOfKeys().Contains("hPDFinAcc1_eps%s_m%s"%(eps,mass)):
-			hPdfAcc1.Write()
+		#if f.GetListOfKeys().Contains("hPDFinAcc1_eps%s_m%s"%(eps,mass)):
+		#	f.Delete("hPDFinAcc1_eps%s_m%s"%(eps,mass))
+		hPdfAcc1.Write("",5)
 	else:
 		valAcc1 = 0.
 	if valAcc2 > 1.e-20:
@@ -297,8 +307,9 @@ def scanPDF(mass, eps, mesonDecay=False):
 		#print valAcc2, totWeight2
 		normalization2 = 1./totWeight2
 		hPdfAcc2.Scale(normalization2)
-		if not f.GetListOfKeys().Contains("hPDFinAcc2_eps%s_m%s"%(eps,mass)):
-			hPdfAcc2.Write()
+		#if f.GetListOfKeys().Contains("hPDFinAcc2_eps%s_m%s"%(eps,mass)):
+		#	f.Delete("hPDFinAcc2_eps%s_m%s"%(eps,mass))
+		hPdfAcc2.Write("",5)
 	else:
 		valAcc2 = 0.
 	f.Close()
@@ -367,8 +378,8 @@ def computeNEvents(mass, eps, mesonDecay=False, binsp=90, binstheta=80):
 	else:
 		outFilePath = "out/TextData/sensitivityScan-FWapprox.txt"
 	#print prodFrac, prob1, prob2, bre, acc1e, acc2e, fracV1, fracV2, expectedEvents
-	with open(outFilePath,"a") as ofile:
-	#with open("out/TextData/sensitivityScanNuCal1.txt","a") as ofile:
+	#with open(outFilePath,"a") as ofile:
+	with open("out/TextData/sensitivityScanNuCal1.txt","a") as ofile:
 		try:
 			if mesonDecay:
 				ofile.write("%s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s\n"%(mass, eps, prodFrac, prob1, prob2, bre, brmu, acc1e, acc2e, acc1mu, acc2mu, factor, expectedEvents ))
