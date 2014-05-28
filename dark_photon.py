@@ -12,11 +12,17 @@ def leptonicDecayWidth(mDarkPhoton, epsilon, lepton): # mDarkPhoton in GeV
 		rad = math.sqrt( 1. - (4.*ml*ml)/(mDarkPhoton*mDarkPhoton) )
 	else:
 		rad = 0.
-	par = 1. - (2.*ml*ml)/(mDarkPhoton*mDarkPhoton)
+	par = 1. + (2.*ml*ml)/(mDarkPhoton*mDarkPhoton)
 	return math.fabs(constant*rad*par)
 
 def leptonicBranchingRatio(mDarkPhoton, epsilon, lepton):
 	return leptonicDecayWidth(mDarkPhoton, epsilon, lepton) / totalDecayWidth(mDarkPhoton, epsilon)
+	#if lepton == e:
+	#	otherlepton = mu
+	#	br = 1. - ((leptonicDecayWidth(mDarkPhoton, epsilon, otherlepton) + hadronicDecayWidth(mDarkPhoton, epsilon))/totalDecayWidth(mDarkPhoton, epsilon))
+	#else: 
+	#	br = leptonicDecayWidth(mDarkPhoton, epsilon, lepton) / totalDecayWidth(mDarkPhoton, epsilon)
+	#return br
 
 def hadronicDecayWidth(mDarkPhoton, epsilon):
 	""" Dark photon decay into hadrons """
@@ -32,7 +38,12 @@ def hadronicBranchingRatio(mDarkPhoton, epsilon):
 
 def totalDecayWidth(mDarkPhoton, epsilon): # mDarkPhoton in GeV
 	""" Total decay width in GeV """
-	return hGeV*c / cTau(mDarkPhoton, epsilon)
+	#return hGeV*c / cTau(mDarkPhoton, epsilon)
+	tdw = (leptonicDecayWidth(mDarkPhoton, epsilon, e)
+		+ leptonicDecayWidth(mDarkPhoton, epsilon, mu)
+		+ leptonicDecayWidth(mDarkPhoton, epsilon, tau)
+		+ hadronicDecayWidth(mDarkPhoton, epsilon))
+	return tdw
 	#if Ree_const in vars():
 	#	return 3./((1.+Ree_const)*alphaQED*mDarkPhoton*pow(epsilon,2.))
 	#else:
@@ -79,7 +90,8 @@ def lifetime100ms(mass):
 def Ree_interp(s): # s in GeV
 	""" Using PDG values for sigma(e+e- -> hadrons) / sigma(e+e- -> mu+mu-) """
 	# Da http://pdg.lbl.gov/2012/hadronic-xsections/hadron.html#miscplots
-	ecm = math.sqrt(s)
+	#ecm = math.sqrt(s)
+	ecm = s
 	if ecm>=dataEcm[0]:
 		result = float(PdgR(ecm))
 	else:
