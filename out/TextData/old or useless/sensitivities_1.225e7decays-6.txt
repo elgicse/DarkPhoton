@@ -1,0 +1,2 @@
+Eps 	 Mass 	 ProdRate 	 BR(ee) 	 BR(mumu) 	 Acc(ee) 	 Acc(mumu) 	 TotalAcc 	 nEventsInSHiP
+3e-07 	 0.8 	 1.90579970185e-14 	 0.33690257153 	 0.31358310261 	 0.00271314285714 	 0.00273216326531 	 0.00177082503907 	 6749.675663 

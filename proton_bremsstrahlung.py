@@ -94,8 +94,8 @@ def pMin(mDarkPhoton):
 	#return 0.
 
 def pMax(mDarkPhoton):
-	return min(0.86*protonMomentum, math.sqrt( (energy(protonMomentum,mProton)**2. - mDarkPhoton**2.) - mDarkPhoton**2.))
-	#return math.sqrt( (energy(protonMomentum,mProton)**2. - mDarkPhoton**2.) - mDarkPhoton**2.)
+	#return min(0.86*protonMomentum, math.sqrt( (energy(protonMomentum,mProton)**2. - mDarkPhoton**2.) - mDarkPhoton**2.))
+	return math.sqrt( (energy(protonMomentum,mProton)**2. - mDarkPhoton**2.) - mDarkPhoton**2.)
 
 def prodRate(mDarkPhoton,epsilon, tmin = -0.5*math.pi, tmax = 0.5*math.pi):
 	""" dNdPdTheta integrated over p and theta """
@@ -133,20 +133,20 @@ def hProdPDF(mDarkPhoton,epsilon,norm,binsp,binstheta,tmin = -0.5*math.pi, tmax 
 	#momentumStep = 0.05 # GeV
 	#ndiv = int(math.floor(protonMomentum/momentumStep))
 	#momenta = np.linspace(momentumStep,protonMomentum,ndiv,endpoint=False).tolist()
-	momentumStep = (pMax(mDarkPhoton)-pMin(mDarkPhoton))/binsp
+	momentumStep = (pMax(mDarkPhoton)-pMin(mDarkPhoton))/(binsp-1)
 	momenta = np.linspace(pMin(mDarkPhoton),pMax(mDarkPhoton),binsp,endpoint=False).tolist()
 	hPDF = r.TH2F("hPDF_eps%s_m%s"%(epsilon,mDarkPhoton) ,"hPDF_eps%s_m%s"%(epsilon,mDarkPhoton),
-		binsp,pMin(mDarkPhoton)+0.5*momentumStep,pMax(mDarkPhoton)-0.5*momentumStep,
-		binstheta,tmin-0.5*anglestep,tmax+0.5*anglestep)
+		binsp,pMin(mDarkPhoton)-0.5*momentumStep,pMax(mDarkPhoton)-0.5*momentumStep,
+		binstheta,tmin-0.5*anglestep,tmax-0.5*anglestep)
 	hPDF.SetTitle("PDF for A' production (m_{A'}=%s GeV, #epsilon =%s)"%(mDarkPhoton,epsilon))
 	hPDF.GetXaxis().SetTitle("P_{A'} [GeV]")
 	hPDF.GetYaxis().SetTitle("#theta_{A'} [rad]")
 	hPDFtheta = r.TH1F("hPDFtheta_eps%s_m%s"%(epsilon,mDarkPhoton),
 		"hPDFtheta_eps%s_m%s"%(epsilon,mDarkPhoton),
-		binstheta,tmin-0.5*anglestep,tmax+0.5*anglestep)
+		binstheta,tmin-0.5*anglestep,tmax-0.5*anglestep)
 	hPDFp = r.TH1F("hPDFp_eps%s_m%s"%(epsilon,mDarkPhoton),
 		"hPDFp_eps%s_m%s"%(epsilon,mDarkPhoton),
-		binsp,pMin(mDarkPhoton)+0.5*momentumStep,pMax(mDarkPhoton)-0.5*momentumStep)
+		binsp,pMin(mDarkPhoton)-0.5*momentumStep,pMax(mDarkPhoton)-0.5*momentumStep)
 	hPDFp.GetXaxis().SetTitle("P_{A'} [GeV]")
 	hPDFtheta.GetXaxis().SetTitle("#theta_{A'} [rad]")
 	for theta in angles:

@@ -63,7 +63,7 @@ newy2 = [-5.9, -7.2]
 msl1 = (-7.+2.5)/(1.+3.0)
 msl2 = 0.
 # ystart (upper, lower)
-mnewy1 = [-2,1, -3.1]
+mnewy1 = [-2.1, -3.1]
 #newy2 = [-6.1, -7.1]
 mnewy2 = [-7.2, -8.5]
 me = math.log10(eta1Stop)
