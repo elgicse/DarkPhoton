@@ -278,7 +278,7 @@ def loadDataFile(mesonDecay = False):
 	if mesonDecay:
 		filepath = "out/TextData/sensitivityScan-MesonDecays.txt"
 	if not os.path.isfile(filepath):
-		return 0
+		return []
 	data = []
 	with open(filepath,"r") as ifile:
 		for line in ifile:
