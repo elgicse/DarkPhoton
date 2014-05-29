@@ -378,8 +378,8 @@ def computeNEvents(mass, eps, mesonDecay=False, binsp=90, binstheta=80):
 	else:
 		outFilePath = "out/TextData/sensitivityScan-FWapprox.txt"
 	#print prodFrac, prob1, prob2, bre, acc1e, acc2e, fracV1, fracV2, expectedEvents
-	#with open(outFilePath,"a") as ofile:
-	with open("out/TextData/sensitivityScanNuCal1.txt","a") as ofile:
+	with open(outFilePath,"a") as ofile:
+	#with open("out/TextData/sensitivityScanNuCal1.txt","a") as ofile:
 		try:
 			if mesonDecay:
 				ofile.write("%s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s\n"%(mass, eps, prodFrac, prob1, prob2, bre, brmu, acc1e, acc2e, acc1mu, acc2mu, factor, expectedEvents ))
