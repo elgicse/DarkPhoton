@@ -1,0 +1,59 @@
+In [10]: d1
+[('g gamma u', {'nEvents': 5, 'massDiff': -0.33000001311302185}), 
+('g gamma ubar', {'nEvents': 2, 'massDiff': -0.33000001311302185}), 
+('g gamma d', {'nEvents': 1, 'massDiff': -0.33000001311302185}), 
+('u u gamma', {'nEvents': 22, 'massDiff': -1.3113021835042815e-08}), 
+('d d gamma', {'nEvents': 2, 'massDiff': -1.3113021835042815e-08}), 
+('gamma gamma', {'nEvents': 2, 'massDiff': 0.0}), 
+('s s gamma', {'nEvents': 1, 'massDiff': 0.0}), 
+('Sigma0 Lambda0 gamma', {'nEvents': 2574, 'massDiff': 0.0769600206756591}), 
+('Sigmabar0 Lambdabar0 gamma', {'nEvents': 1203, 'massDiff': 0.0769600206756591}), 
+('Xi0 Sigma0 gamma', {'nEvents': 1, 'massDiff': 0.12222005306243888}), 
+('pi0 gamma e- e+', {'nEvents': 4324, 'massDiff': 0.13395800001781433}), 
+('pi0 gamma gamma', {'nEvents': 351262, 'massDiff': 0.13498}), 
+('D*0 D0 gamma', {'nEvents': 3, 'massDiff': 0.14211994216918944}), 
+('D*_s- D_s- gamma', {'nEvents': 1, 'massDiff': 0.1438099954605101}), 
+("eta' omega gamma", {'nEvents': 103, 'massDiff': 0.1751300061035156}), 
+('Lambda0 n0 gamma', {'nEvents': 22, 'massDiff': 0.17610999029159546}), 
+('Lambdabar0 nbar0 gamma', {'nEvents': 3, 'massDiff': 0.17610999029159546}), 
+("eta' rho0 gamma", {'nEvents': 1185, 'massDiff': 0.1822900140571594}), 
+('Xibar0 Lambdabar0 gamma', {'nEvents': 2, 'massDiff': 0.1991800206756591}), 
+('rho0 eta gamma', {'nEvents': 20, 'massDiff': 0.22763998722076417}), 
+('omega eta gamma', {'nEvents': 28, 'massDiff': 0.23479998722076412}), 
+('Sigma+ p+ gamma', {'nEvents': 3, 'massDiff': 0.25110002719879154}), 
+('Sigma*0 Lambda0 gamma', {'nEvents': 15, 'massDiff': 0.2680200206756591}), 
+('Sigma*bar0 Lambdabar0 gamma', {'nEvents': 4, 'massDiff': 0.2680200206756591}), 
+('eta pi+ pi- gamma', {'nEvents': 1842, 'massDiff': 0.2687100044250488}), 
+('Delta0 n0 gamma', {'nEvents': 52, 'massDiff': 0.29242999029159544}), 
+('Deltabar0 nbar0 gamma', {'nEvents': 7, 'massDiff': 0.29242999029159544}), 
+('Delta+ p+ gamma', {'nEvents': 84, 'massDiff': 0.2937300271987915}), 
+('Deltabar- pbar- gamma', {'nEvents': 2, 'massDiff': 0.2937300271987915}), 
+('ubar g gamma', {'nEvents': 1, 'massDiff': 0.33}), 
+('eta gamma mu- mu+', {'nEvents': 10, 'massDiff': 0.3365300020933151}), 
+('K*+ K+ gamma', {'nEvents': 13, 'massDiff': 0.3979799996948242}), 
+('K*- K- gamma', {'nEvents': 10, 'massDiff': 0.3979799996948242}), 
+('K*0 K0 gamma', {'nEvents': 27, 'massDiff': 0.3983299972438812}), 
+('K*bar0 Kbar0 gamma', {'nEvents': 18, 'massDiff': 0.3983299972438812}), 
+('eta pi0 gamma gamma', {'nEvents': 7, 'massDiff': 0.41287000689506526}), 
+('chi_2c J/psi gamma', {'nEvents': 3, 'massDiff': 0.45927998657226565}), 
+('phi eta gamma', {'nEvents': 20, 'massDiff': 0.4716099872207642}), 
+('rho0 pi0 pi0 gamma', {'nEvents': 1, 'massDiff': 0.5055300137901306}), 
+('omega pi0 pi0 gamma', {'nEvents': 4, 'massDiff': 0.5126900137901306}), 
+('eta gamma e- e+', {'nEvents': 274, 'massDiff': 0.5468280000178143}), 
+('eta gamma gamma', {'nEvents': 14980, 'massDiff': 0.54785}), 
+('rho+ pi+ gamma', {'nEvents': 35, 'massDiff': 0.6359200022125244}), 
+('rho- pi- gamma', {'nEvents': 24, 'massDiff': 0.6359200022125244}), 
+('rho0 pi0 gamma', {'nEvents': 37, 'massDiff': 0.6405100068950653}), 
+('omega pi0 gamma', {'nEvents': 4512, 'massDiff': 0.6476700068950653}), 
+('phi pi0 gamma', {'nEvents': 1, 'massDiff': 0.8844800068950653}), 
+("eta' gamma gamma", {'nEvents': 98, 'massDiff': 0.95778})]
+
+
+In [11]: t.GetEntry(t.GetEntries()-1)
+68
+
+In [12]: nGenerated = t.eventNumber
+
+In [13]: nGenerated
+64989
+

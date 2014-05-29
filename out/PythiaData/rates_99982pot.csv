@@ -1,0 +1,41 @@
+Process,nPhotons,availableMass,motherMass
+Sigma0 Lambda0 gamma,3901,0.0769600207,1.19264
+Sigmabar0 Lambdabar0 gamma,1832,0.0769600207,1.19264
+Xi0 Sigma0 gamma,2,0.1222200531,1.31486
+pi0 gamma e- e+,6713,0.133958,0.13498
+pi0 gamma gamma,540645,0.13498,0.13498
+D*0 D0 gamma,3,0.1421199422,2.00698
+D*_s- D_s- gamma,1,0.1438099955,2.1123
+eta' omega gamma,178,0.1751300061,0.95778
+Lambda0 n0 gamma,28,0.1761099903,1.11568
+Lambdabar0 nbar0 gamma,4,0.1761099903,1.11568
+eta' rho0 gamma,1859,0.1822900141,0.95778
+Xibar0 Lambdabar0 gamma,2,0.1991800207,1.31486
+rho0 eta gamma,27,0.2276399872,0.77549
+omega eta gamma,38,0.2347999872,0.78265
+Sigma+ p+ gamma,5,0.2511000272,1.18937
+Sigma*0 Lambda0 gamma,21,0.2680200207,1.3837
+Sigma*bar0 Lambdabar0 gamma,6,0.2680200207,1.3837
+eta pi+ pi- gamma,2791,0.2687100044,0.54785
+Delta0 n0 gamma,101,0.2924299903,1.232
+Deltabar0 nbar0 gamma,12,0.2924299903,1.232
+Delta+ p+ gamma,140,0.2937300272,1.232
+Deltabar- pbar- gamma,8,0.2937300272,1.232
+eta gamma mu- mu+,18,0.3365300021,0.54785
+K*+ K+ gamma,23,0.3979799997,0.89166
+K*- K- gamma,13,0.3979799997,0.89166
+K*0 K0 gamma,38,0.3983299972,0.89594
+K*bar0 Kbar0 gamma,26,0.3983299972,0.89594
+eta pi0 gamma gamma,12,0.4128700069,0.54785
+chi_2c J/psi gamma,5,0.4592799866,3.5562
+phi eta gamma,41,0.4716099872,1.01946
+rho0 pi0 pi0 gamma,1,0.5055300138,0.77549
+omega pi0 pi0 gamma,5,0.5126900138,0.78265
+eta gamma e- e+,431,0.546828,0.54785
+eta gamma gamma,23139,0.54785,0.54785
+rho+ pi+ gamma,47,0.6359200022,0.77549
+rho- pi- gamma,43,0.6359200022,0.77549
+rho0 pi0 gamma,54,0.6405100069,0.77549
+omega pi0 gamma,6934,0.6476700069,0.78265
+phi pi0 gamma,2,0.8844800069,1.01946
+eta' gamma gamma,141,0.95778,0.95778
