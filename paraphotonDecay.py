@@ -295,8 +295,8 @@ def inAcceptance(vtx, pChild1, pChild2):
 			#print "endPos1 ", endPos1.X(), endPos1.Y(), endPos1.Z()
 			if (endPos1.X()**2. + endPos1.Y()**2.) < firstVolume[2]:
 				# Check if child 2 goes through the detector:
-				tx2 = pChild1.Px() / pChild1.Pz()
-				ty2 = pChild1.Py() / pChild1.Pz()
+				tx2 = pChild2.Px() / pChild2.Pz()
+				ty2 = pChild2.Py() / pChild2.Pz()
 				endPos2 = r.TVector3()
 				endPos2.SetZ(firstVolume[1])
 				endPos2.SetX( vtx.X() + tx2*(endPos2.Z() - vtx.Z()) )
@@ -315,8 +315,8 @@ def inAcceptance(vtx, pChild1, pChild2):
 			endPos1.SetY( vtx.Y() + ty1*(endPos1.Z() - vtx.Z()) )
 			if (endPos1.X()**2. + endPos1.Y()**2.) < secondVolume[2]:
 				# Check if child 2 goes through the detector:
-				tx2 = pChild1.Px() / pChild1.Pz()
-				ty2 = pChild1.Py() / pChild1.Pz()
+				tx2 = pChild2.Px() / pChild2.Pz()
+				ty2 = pChild2.Py() / pChild2.Pz()
 				endPos2 = r.TVector3()
 				endPos2.SetZ(secondVolume[1])
 				endPos2.SetX( vtx.X() + tx2*(endPos2.Z() - vtx.Z()) )

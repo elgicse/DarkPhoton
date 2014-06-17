@@ -401,6 +401,7 @@ if __name__ == '__main__':
 	grLifetimeLimit.SetLineColor(r.kBlack)
 	grLifetimeLimit.SetLineWidth(-3502)
 	grLifetimeLimit.SetFillStyle(3002)
+	grLifetimeLimit.SetTitle("Excluded area (BBN)")
 
 	# Plot on top of the old limits
 	current_mass = []
@@ -451,9 +452,9 @@ if __name__ == '__main__':
 	mgr.Add(gr_curr)
 	#mgr.Add(miniboone)
 	#mgr.Add(grLifetimeLimit)
-	mgr.Add(mgrtotlog)
-	mgr.Add(grtotlog)
-	#mgr.Add(grTotal)
+	#mgr.Add(mgrtotlog)
+	#mgr.Add(grtotlog)
+	mgr.Add(grTotal)
 	mgr.Draw("alp")
 	mgr.GetXaxis().SetTitle(r"m_{#gamma'} (GeV)")
 	mgr.GetYaxis().SetTitle(r"#varepsilon")
