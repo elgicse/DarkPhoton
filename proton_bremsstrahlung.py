@@ -10,12 +10,10 @@ from paraphotonDecay import *
 
 def zeta(p,theta):
 	""" Fraction of the proton momentum carried away by the paraphoton in the beam direction """
-	#return 1. / math.sqrt(theta*theta + 1.)
 	return p / (protonMomentum * math.sqrt(theta*theta + 1.))
 
 def pTransverse(p,theta):
 	""" Paraphoton transverse momentum in the lab frame """
-	#return p*theta*zeta(p,theta)
 	return protonMomentum*theta*zeta(p,theta)
 
 def ptSquare(p,theta):
@@ -50,11 +48,7 @@ def sigma(s): # s in GeV^2 ---> sigma in mb
 	a4 = 33.34
 	a5 = 0.545
 	a6 = 0.458
-	#try: 
-	p1 = a2*pow(math.log(s/a3),2.) # natural logarithm, right?
-	#except ValueError:
-	#	p1 = 0.
-	#	print "could not compute sigma for s = %s"%s
+	p1 = a2*pow(math.log(s/a3),2.) 
 	p2 = a4*pow((1./s),a5)
 	p3 = a4*pow((1./s),a6)
 	return a1 + p1 - p2 + p3
@@ -73,15 +67,11 @@ def dNdZdPtSquare(p,mDarkPhoton,theta,epsilon):
 
 def dPt2dTheta(p,theta):
 	""" Jacobian Pt^2->theta """
-	#pPar = p*zeta(p,theta)
-	#return 2.*math.fabs(theta)*pPar*pPar
 	z2 = pow(zeta(p,theta),2.)
 	return 2.*theta*z2*protonMomentum*protonMomentum
 
 def dZdP(p,theta):
 	""" Jacobian z->p """
-	#return p / (zeta(p,theta)*protonMomentum*protonMomentum)
-	#return 1. / (zeta(p,theta)*p)
 	return 1./( protonMomentum* math.sqrt(theta*theta+1.) )
 
 def dNdPdTheta(p,theta,mDarkPhoton,epsilon):
@@ -91,7 +81,6 @@ def dNdPdTheta(p,theta,mDarkPhoton,epsilon):
 
 def pMin(mDarkPhoton):
 	return max(0.14*protonMomentum, mDarkPhoton)
-	#return 0.
 
 def pMax(mDarkPhoton):
 	#return min(0.86*protonMomentum, math.sqrt( (energy(protonMomentum,mProton)**2. - mDarkPhoton**2.) - mDarkPhoton**2.))
@@ -101,7 +90,6 @@ def prodRate(mDarkPhoton,epsilon, tmin = -0.5*math.pi, tmax = 0.5*math.pi):
 	""" dNdPdTheta integrated over p and theta """
 	integral = dblquad( dNdPdTheta, # integrand
 						tmin, tmax, # theta boundaries (2nd argument of integrand)
-						#lambda x: 0.14*protonMomentum, lambda x: pMax(mDarkPhoton), # p boundaries (1st argument of integrand)
 						lambda x: pMin(mDarkPhoton), lambda x: pMax(mDarkPhoton), # p boundaries (1st argument of integrand)
 						args=(mDarkPhoton, epsilon) ) # extra parameters to pass to integrand
 	return integral[0]
@@ -123,16 +111,8 @@ def normalisedProductionPDF(p,theta,mDarkPhoton,epsilon,norm):
 
 def hProdPDF(mDarkPhoton,epsilon,norm,binsp,binstheta,tmin = -0.5*math.pi, tmax = 0.5*math.pi):
 	""" Histogram of the PDF for A' production in SHIP """
-	#norm = prodRate(mDarkPhoton,epsilon)
-	#angles = np.linspace(-1*math.pi,1.*math.pi,360,endpoint=False).tolist()
-	#angles = np.linspace(-0.5*math.pi,0.5*math.pi,binstheta,endpoint=False).tolist()
 	angles = np.linspace(tmin,tmax,binstheta).tolist()
-	#anglestep = math.pi/180.
-	#anglestep = 2.*math.pi/binstheta
 	anglestep = 2.*(tmax - tmin)/binstheta
-	#momentumStep = 0.05 # GeV
-	#ndiv = int(math.floor(protonMomentum/momentumStep))
-	#momenta = np.linspace(momentumStep,protonMomentum,ndiv,endpoint=False).tolist()
 	momentumStep = (pMax(mDarkPhoton)-pMin(mDarkPhoton))/(binsp-1)
 	momenta = np.linspace(pMin(mDarkPhoton),pMax(mDarkPhoton),binsp,endpoint=False).tolist()
 	hPDF = r.TH2F("hPDF_eps%s_m%s"%(epsilon,mDarkPhoton) ,"hPDF_eps%s_m%s"%(epsilon,mDarkPhoton),
@@ -171,8 +151,6 @@ def create4Momenta(mDarkPhoton,epsilon,norm,nEvents=10000,tmin = -0.5*math.pi, t
 	""" Create TTree containing the production PDF and the four-momenta and decay vertices of 1000 A' produced in the SHIP beam dump """
 	print "Producing PDF, be patient..."
 	pdf = hProdPDF(mDarkPhoton,epsilon,norm,binsp, binstheta,tmin, tmax)
-	#proton4mom = r.TLorentzVector(0., 0., protonMomentum, protonEnergy)
-	#boostVect = proton4mom.BoostVector()
 	origin = r.TVector3(0.,0.,0.)
 	newTree = r.TTree("newTree","newTree")
 	res = {}
@@ -181,13 +159,11 @@ def create4Momenta(mDarkPhoton,epsilon,norm,nEvents=10000,tmin = -0.5*math.pi, t
 			print "Processing paraphoton %s..."%i
 		p, theta = r.Double(), r.Double()
 		pdf.GetRandom2(p, theta)
-		#print "Momentum %s \t\t Angle %s"%(p,theta)
 		vec = r.TVector3()
 		vec.SetMagThetaPhi(p, theta, 0) # Phi is arbitrary
 		pParaphoton = r.TLorentzVector()
 		pParaphoton.SetE(energy(p, mDarkPhoton))
 		pParaphoton.SetVect(vec)
-		#pParaphoton.Boost(boostVect)
 
 		decayLength = cTau(mDarkPhoton, epsilon)
 		tau = lifetime(mDarkPhoton, epsilon)
@@ -277,7 +253,6 @@ def scanPDF(mass, eps, mesonDecay=False):
 				fourMom.SetVect(vec)
 				gamma = fourMom.Gamma()
 				px = fourMom.Px()
-				#py = fourMom.Py()
 				pz = fourMom.Pz()
 				accGeo1 = GeometricAcceptance(px, pz, 1)
 				accGeo2 = GeometricAcceptance(px, pz, 2)
@@ -291,24 +266,17 @@ def scanPDF(mass, eps, mesonDecay=False):
 					accGeo2, accLifetimeVol1, accLifetimeVol2])
 				hPdfAcc1.Fill(mom, angle, acc1)
 				hPdfAcc2.Fill(mom, angle, acc2)
-	#print "acc ",valAcc1, valAcc2
 	if valAcc1 > 1.e-20:
 		totWeight1 = hPdfAcc1.Integral("width")
-		#print valAcc1, totWeight1
 		normalization1 = 1./totWeight1
 		hPdfAcc1.Scale(normalization1)
-		#if f.GetListOfKeys().Contains("hPDFinAcc1_eps%s_m%s"%(eps,mass)):
-		#	f.Delete("hPDFinAcc1_eps%s_m%s"%(eps,mass))
 		hPdfAcc1.Write("",5)
 	else:
 		valAcc1 = 0.
 	if valAcc2 > 1.e-20:
 		totWeight2 = hPdfAcc2.Integral("width")
-		#print valAcc2, totWeight2
 		normalization2 = 1./totWeight2
 		hPdfAcc2.Scale(normalization2)
-		#if f.GetListOfKeys().Contains("hPDFinAcc2_eps%s_m%s"%(eps,mass)):
-		#	f.Delete("hPDFinAcc2_eps%s_m%s"%(eps,mass))
 		hPdfAcc2.Write("",5)
 	else:
 		valAcc2 = 0.
@@ -323,7 +291,6 @@ def makeAcceptancePdf(mass, eps, binsp, binstheta, mesonDecay):
 		norm = prodRate(mass, eps, tmin, tmax)
 	else:
 		norm = prodRateFromMesons(mass)
-	#print "prodrate in %s, %s: %s"%(tmin,tmax, norm)
 	if (not mesonDecay) and (not os.path.isfile("out/NTuples/ParaPhoton_eps%s_m%s.root"%(eps,mass))):
 		hProdPDF(mass, eps, norm, binsp, binstheta, tmin, tmax)
 	valAcc1, valAcc2, outData = scanPDF(mass, eps, mesonDecay)
@@ -377,7 +344,6 @@ def computeNEvents(mass, eps, mesonDecay=False, binsp=90, binstheta=80):
 		outFilePath = "out/TextData/sensitivityScan-MesonDecays.txt"
 	else:
 		outFilePath = "out/TextData/sensitivityScan-FWapprox.txt"
-	#print prodFrac, prob1, prob2, bre, acc1e, acc2e, fracV1, fracV2, expectedEvents
 	with open(outFilePath,"a") as ofile:
 	#with open("out/TextData/sensitivityScanNuCal1.txt","a") as ofile:
 		try:
