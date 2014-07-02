@@ -56,7 +56,7 @@ def probVtxInVolume(momentum, ct, volume, gamma=0):
 		return 0.
 	esp1 = (-1.) * (start/costheta) / (gamma*ct)
 	esp2 = (-1.) * (stop/costheta) / (gamma*ct)
-	np.seterr(all='raise')
+	#np.seterr(all='raise')
 	try:
 		result = np.nan_to_num(np.fabs( np.exp(esp1) - np.exp(esp2) ))
 	except (ValueError, FloatingPointError):#, RuntimeWarning):
@@ -171,7 +171,8 @@ def GeometricAcceptance(px, pz, volume):
 	#print vol[1]
 	#pt = math.sqrt(px*px + py*py)
 	# Check theta
-	if (math.fabs((px/pz)*vol[1])<vol[2]) and (pz>0):
+    #if (math.fabs((px/pz)*vol[1])<vol[2]) and (pz>0):
+    if (math.fabs((px/pz)*vol[0])<vol[2]) and (pz>0):
 		return True
 	return False
 

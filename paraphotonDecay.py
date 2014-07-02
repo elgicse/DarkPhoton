@@ -284,7 +284,8 @@ def boostChildren(lepton,mDarkPhoton,epsilon,nMaxParaphotons=0,nMaxChildren=0):
 def inAcceptance(vtx, pChild1, pChild2):
 	# Check if A' -> l+l- vertex is in the first volume
 	if (vtx.Z() > firstVolume[0]) and (vtx.Z() < firstVolume[1]):
-		if (vtx.X()**2. + vtx.Y()**2.) < firstVolume[2]:
+		#if (vtx.X()**2. + vtx.Y()**2.) < firstVolume[2]:
+		if (vtx.X()**2. + vtx.Y()**2.) < firstVolume[2]**2.:
 			# Check if child 1 goes through the detector:
 			tx1 = pChild1.Px() / pChild1.Pz()
 			ty1 = pChild1.Py() / pChild1.Pz()
@@ -305,7 +306,8 @@ def inAcceptance(vtx, pChild1, pChild2):
 					return True
 	# Check if A' -> l+l- vertex is in the second volume
 	elif (vtx.Z() > secondVolume[0]) and (vtx.Z() < secondVolume[1]):
-		if (vtx.X()**2. + vtx.Y()**2.) < secondVolume[2]:
+		#if (vtx.X()**2. + vtx.Y()**2.) < secondVolume[2]:
+		if (vtx.X()**2. + vtx.Y()**2.) < secondVolume[2]**2.:
 			# Check if child 1 goes through the detector:
 			tx1 = pChild1.Px() / pChild1.Pz()
 			ty1 = pChild1.Py() / pChild1.Pz()
