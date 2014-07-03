@@ -416,28 +416,28 @@ if __name__ == '__main__':
 	current_r_mass = array('f', current_mass)
 	current_r_eps = array('f', current_eps)
 	gr_curr = r.TGraph(len(current_r_mass), current_r_mass, current_r_eps)
-	gr_curr.SetLineWidth(3504)
+	gr_curr.SetLineWidth(3104)
 	gr_curr.SetFillStyle(3002)
 	gr_curr.SetLineColor(r.kGray+2)
 	gr_curr.SetTitle("Current limits on dark photons")
 
-	# Plot on top of minoboone
-	miniboone_mass = []
-	miniboone_eps = []
-	
-	with open("miniboone.csv","r") as f_current:
-		for line in f_current:
-			line = line.split(",")
-			miniboone_mass.append(float(line[0]))
-			miniboone_eps.append(float(line[1]))
-	
-	miniboone_r_mass = array('f', miniboone_mass)
-	miniboone_r_eps = array('f', miniboone_eps)
-	miniboone = r.TGraph(len(miniboone_r_mass), miniboone_r_mass, miniboone_r_eps)
-	miniboone.SetLineWidth(3504)
-	miniboone.SetFillStyle(3002)
-	miniboone.SetLineColor(r.kOrange)
-	miniboone.SetTitle("MiniBooNE sensitivity")
+	## Plot on top of minoboone
+	#miniboone_mass = []
+	#miniboone_eps = []
+	#
+	#with open("miniboone.csv","r") as f_current:
+	#	for line in f_current:
+	#		line = line.split(",")
+	#		miniboone_mass.append(float(line[0]))
+	#		miniboone_eps.append(float(line[1]))
+	#
+	#miniboone_r_mass = array('f', miniboone_mass)
+	#miniboone_r_eps = array('f', miniboone_eps)
+	#miniboone = r.TGraph(len(miniboone_r_mass), miniboone_r_mass, miniboone_r_eps)
+	#miniboone.SetLineWidth(3504)
+	#miniboone.SetFillStyle(3002)
+	#miniboone.SetLineColor(r.kOrange)
+	#miniboone.SetTitle("MiniBooNE sensitivity")
 	
 	#gr_curr.Draw("alp")
 	grtotlog.SetLineColor(r.kRed-4)
@@ -451,7 +451,7 @@ if __name__ == '__main__':
 	mgr = r.TMultiGraph()
 	mgr.Add(gr_curr)
 	#mgr.Add(miniboone)
-	#mgr.Add(grLifetimeLimit)
+	mgr.Add(grLifetimeLimit)
 	#mgr.Add(mgrtotlog)
 	#mgr.Add(grtotlog)
 	mgr.Add(grTotal)
@@ -462,7 +462,8 @@ if __name__ == '__main__':
 	mgr.GetYaxis().SetTitleSize(0.05)
 	mgr.GetXaxis().SetTitleOffset(0.90)
 	mgr.GetYaxis().SetTitleOffset(0.90)
-
+	mgr.GetYaxis().SetLimits(1.e-12, 1.e-2)
+	mgr.GetYaxis().SetRangeUser(1.e-12, 1.e-2)
 	#grtotlog.Draw("same")
 
 	c3.SetGrid()

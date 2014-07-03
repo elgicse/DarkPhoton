@@ -16,6 +16,7 @@ def loadLibs():
 	r.gSystem.Load("$PYTHIA8/lib/libpythia8")
 	r.gSystem.Load("libEG")
 	r.gSystem.Load("libEGPythia8")
+	r.gSystem.Load("$PYTHIA8/PythiaDict/pythiaDict.so")
 
 def readSettings(pythia):
 	pythia.ReadString("SoftQCD:nonDiffractive = on")
