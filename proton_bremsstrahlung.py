@@ -235,8 +235,8 @@ def scanPDF(mass, eps, mesonDecay=False):
 	index = 0
 	valAcc1 = 0.
 	valAcc2 = 0.
-	wtot = 0.
-	naccgeo = 0
+	#wtot = 0.
+	#naccgeo = 0
 	for p in xrange(nMom):
 		for th in xrange(nTheta):
 			index += 1
@@ -247,7 +247,7 @@ def scanPDF(mass, eps, mesonDecay=False):
 				mom = hpdf.GetXaxis().GetBinCenter(p)
 				angle = hpdf.GetYaxis().GetBinCenter(th)
 				binWeight = weight*binRelSize
-				wtot = wtot + binWeight
+				#wtot = wtot + binWeight
 				vec.SetMagThetaPhi(mom, angle, 0.)
 				fourMom.SetE(energy(mom, mass))
 				fourMom.SetVect(vec)

@@ -161,20 +161,20 @@ PdgR = interpolatePDGtable(dataEcm,dataR)
 #		return True
 #	return False
 def GeometricAcceptance(px, pz, volume):
-	if volume == 1:
-		vol = firstVolume
-	elif volume == 2:
-		vol = secondVolume
-	else:
-		print "ERROR: select decay volume 1 or 2"
-		return 0
-	#print vol[1]
-	#pt = math.sqrt(px*px + py*py)
-	# Check theta
+    if volume == 1:
+        vol = firstVolume
+    elif volume == 2:
+        vol = secondVolume
+    else:
+        print "ERROR: select decay volume 1 or 2"
+        return 0
+    #print vol[1]
+    #pt = math.sqrt(px*px + py*py)
+    # Check theta
     #if (math.fabs((px/pz)*vol[1])<vol[2]) and (pz>0):
     if (math.fabs((px/pz)*vol[0])<vol[2]) and (pz>0):
-		return True
-	return False
+        return True
+    return False
 
 
 def prodRateFromMesons(mass):
